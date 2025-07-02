@@ -17,6 +17,10 @@ const navigation = [
   {
     title: "Knowledge",
     href: "/knowledge",
+  },
+  {
+    title: "General Ledger",
+    href: "/general-ledger",
   }
 ];
 

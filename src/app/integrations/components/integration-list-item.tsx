@@ -17,6 +17,16 @@ import { KnowledgeStatus } from "@/models/knowledge";
 import { SyncStatusRouteSuccessResponse } from "@/app/api/integrations/[id]/sync-status/types";
 import { SyncStatusRouteErrorResponse } from "@/app/api/integrations/[id]/sync-status/types";
 import { cn } from "@/lib/utils";
+import { FIELD_MAPPING_CONFIGS } from "@/lib/constants";
+
+// Define document-based integrations that should use the document picker
+const DOCUMENT_BASED_INTEGRATIONS = [
+  'google-drive',
+  'dropbox',
+  'microsoft-sharepoint',
+  'onedrive',
+  'box'
+];
 
 interface IntegrationListItemProps {
   integration: Integration;
@@ -37,11 +47,22 @@ export function IntegrationListItem({
 
   const isSyncing = syncStatus?.status === KnowledgeStatus.in_progress;
 
+  // Helper function to determine if this is a document-based integration
+  const isDocumentBasedIntegration = () => {
+    return DOCUMENT_BASED_INTEGRATIONS.includes(integration.key);
+  };
+
+  // Helper function to get field mapping key for the integration
+  const getFieldMappingKey = () => {
+    return FIELD_MAPPING_CONFIGS[integration.key as keyof typeof FIELD_MAPPING_CONFIGS];
+  };
+
+  // Only poll for sync status for document-based integrations
   const { mutate: mutateSyncStatus } = useSWR<
     SyncStatusRouteSuccessResponse,
     SyncStatusRouteErrorResponse
   >(
-    integration.connection?.id
+    isDocumentBasedIntegration() && integration.connection?.id
       ? `/api/integrations/${integration.connection.id}/sync-status`
       : null,
     async (url) => {
@@ -50,7 +71,7 @@ export function IntegrationListItem({
       return response.json();
     },
     {
-      refreshInterval: isSyncing ? 2000 : 0,
+      refreshInterval: isDocumentBasedIntegration() && isSyncing ? 2000 : 0,
       onSuccess: (data) => {
         setSyncStatus(data);
       },
@@ -96,6 +117,7 @@ export function IntegrationListItem({
     }
   };
 
+  // Only start sync for document-based integrations
   const handleConnect = async ({ syncAfterConnect = true }: { syncAfterConnect: boolean }) => {
     try {
       setIsConnecting(true);
@@ -111,7 +133,7 @@ export function IntegrationListItem({
       setIsConnecting(false);
 
       if (
-        syncAfterConnect
+        syncAfterConnect && isDocumentBasedIntegration()
       ) {
         handleStartSync({ connectionId: connection.id });
       }
@@ -153,10 +175,39 @@ export function IntegrationListItem({
 
   const isDisconnected = integration.connection?.disconnected;
 
+  // Handle configure button click based on integration type
+  const handleConfigure = async () => {
+    if (!integration.connection?.id) {
+      return;
+    }
+
+    try {
+      if (isDocumentBasedIntegration()) {
+        // For document-based integrations, open the document picker
+        setIsPickerOpen(true);
+      } else {
+        // For other integrations, open field mapping configuration
+        const fieldMappingKey = getFieldMappingKey();
+        if (fieldMappingKey) {
+          await integrationApp
+            .connection(integration.connection.id)
+            .fieldMapping(fieldMappingKey)
+            .openConfiguration();
+        } else {
+          toast.error("Field mapping configuration not available for this integration");
+        }
+      }
+    } catch (error) {
+      toast.error("Failed to open configuration", {
+        description: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  };
+
 
   return (
     <>
-      {isPickerOpen && (
+      {isPickerOpen && isDocumentBasedIntegration() && (
         <DocumentPicker
           isSyncing={isSyncing}
           integration={integration}
@@ -200,12 +251,27 @@ export function IntegrationListItem({
               </p>
             )}
 
-            {isSyncing && (
+            {isDocumentBasedIntegration() && isSyncing && (
               <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
                 <Icons.spinner className="h-3 w-3 animate-spin" />
                 <span>Syncing...</span>
               </div>
             )}
+
+            {/* Integration type indicator */}
+            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-gray-50 text-gray-600">
+              {isDocumentBasedIntegration() ? (
+                <>
+                  <Icons.file className="h-3 w-3" />
+                  <span>Documents</span>
+                </>
+              ) : (
+                <>
+                  <Icons.code className="h-3 w-3" />
+                  <span>Data</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -215,7 +281,7 @@ export function IntegrationListItem({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setIsPickerOpen(true)}
+                onClick={handleConfigure}
               >
                 <Settings className="w-4 h-4 mr-2" />
                 Configure
@@ -223,7 +289,7 @@ export function IntegrationListItem({
               {isDisconnected ? (
                 <Button
                   variant="ghost"
-                  onClick={() => handleConnect({ syncAfterConnect: false })}
+                  onClick={() => handleConnect({ syncAfterConnect: isDocumentBasedIntegration() })}
                   size="sm"
                   disabled={isConnecting}
                 >
@@ -244,7 +310,7 @@ export function IntegrationListItem({
             </>
           ) : (
             <Button
-              onClick={() => handleConnect({ syncAfterConnect: true })}
+              onClick={() => handleConnect({ syncAfterConnect: isDocumentBasedIntegration() })}
               variant="default"
               size="sm"
               disabled={isConnecting}

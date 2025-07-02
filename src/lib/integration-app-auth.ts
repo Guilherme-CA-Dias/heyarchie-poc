@@ -6,7 +6,8 @@ const WORKSPACE_SECRET = process.env.INTEGRATION_APP_WORKSPACE_SECRET!;
 
 interface IntegrationAppTokenPayload {
   iss: string | undefined; // Workspace key
-  sub: string | undefined; // User ID
+  sub: string | undefined; // User ID (legacy)
+  id: string | undefined; // User ID (actual)
   fields: Record<string, unknown>; // User fields
 }
 
@@ -27,6 +28,7 @@ export async function verifyIntegrationAppToken(request: NextRequest): Promise<I
     return {
       iss: payload.iss,
       sub: payload.sub,
+      id: payload.id as string | undefined,
       fields: payload.fields as Record<string, unknown>,
     };
   } catch (error) {
