@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { JournalEntryModel } from "@/models/journal-entry";
+import { LedgerAccountModel } from "@/models/ledger-account";
 import connectDB from "@/lib/mongodb";
 
 export async function POST(request: NextRequest) {
@@ -7,32 +7,31 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const body = await request.json();
-    const { journalEntries, connectionId, integrationId, integrationName } = body;
+    const { ledgerAccounts, connectionId, integrationId, integrationName } = body;
 
-    if (!journalEntries || !Array.isArray(journalEntries)) {
-      return NextResponse.json({ error: "Invalid journal entries data" }, { status: 400 });
+    if (!ledgerAccounts || !Array.isArray(ledgerAccounts)) {
+      return NextResponse.json({ error: "Invalid ledger accounts data" }, { status: 400 });
     }
 
     // Prepare entries for bulk upsert
-    const bulkOps = journalEntries.map((entry: any) => {
-      // Log the first entry to debug field mapping
-      if (journalEntries.indexOf(entry) === 0) {
-        console.log('Sample journal entry being saved:', {
-          id: entry.id,
+    const bulkOps = ledgerAccounts.map((account: any) => {
+      // Log the first account to debug field mapping
+      if (ledgerAccounts.indexOf(account) === 0) {
+        console.log('Sample ledger account being saved:', {
+          id: account.id,
           integrationId,
           connectionId,
-          ledgerAccountId: entry.ledgerAccountId,
-          hasLedgerAccountId: 'ledgerAccountId' in entry,
-          fields: Object.keys(entry)
+          name: account.name,
+          fields: Object.keys(account)
         });
       }
       
       return {
         updateOne: {
-          filter: { id: entry.id, integrationId, connectionId },
+          filter: { id: account.id, integrationId, connectionId },
           update: {
             $set: {
-              ...entry,
+              ...account,
               connectionId,
               integrationId,
               integrationName,
@@ -45,19 +44,19 @@ export async function POST(request: NextRequest) {
     });
 
     // Perform bulk upsert
-    const result = await JournalEntryModel.bulkWrite(bulkOps);
+    const result = await LedgerAccountModel.bulkWrite(bulkOps);
 
     return NextResponse.json({
       success: true,
       inserted: result.upsertedCount,
       modified: result.modifiedCount,
-      total: journalEntries.length,
+      total: ledgerAccounts.length,
     });
 
   } catch (error) {
-    console.error("Error saving journal entries:", error);
+    console.error("Error saving ledger accounts:", error);
     return NextResponse.json(
-      { error: "Failed to save journal entries" },
+      { error: "Failed to save ledger accounts" },
       { status: 500 }
     );
   }
@@ -93,10 +92,10 @@ export async function GET(request: NextRequest) {
         }
       ];
 
-      const counts = await JournalEntryModel.aggregate(pipeline);
+      const counts = await LedgerAccountModel.aggregate(pipeline);
       
       // Get total count
-      const totalCount = await JournalEntryModel.countDocuments({});
+      const totalCount = await LedgerAccountModel.countDocuments({});
 
       return NextResponse.json({
         counts,
@@ -110,28 +109,28 @@ export async function GET(request: NextRequest) {
       query.integrationId = integrationId;
     }
 
-    // Get journal entries with pagination
-    const journalEntries = await JournalEntryModel
+    // Get ledger accounts with pagination
+    const ledgerAccounts = await LedgerAccountModel
       .find(query)
-      .sort({ transactionDate: -1, createdTime: -1 })
+      .sort({ name: 1 })
       .skip(offset)
       .limit(limit)
       .lean();
 
     // Get total count
-    const total = await JournalEntryModel.countDocuments(query);
+    const total = await LedgerAccountModel.countDocuments(query);
 
     return NextResponse.json({
-      journalEntries,
+      ledgerAccounts,
       total,
       limit,
       offset,
     });
 
   } catch (error) {
-    console.error("Error fetching journal entries:", error);
+    console.error("Error fetching ledger accounts:", error);
     return NextResponse.json(
-      { error: "Failed to fetch journal entries" },
+      { error: "Failed to fetch ledger accounts" },
       { status: 500 }
     );
   }

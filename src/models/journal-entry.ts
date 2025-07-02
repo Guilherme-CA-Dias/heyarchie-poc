@@ -7,6 +7,7 @@ export interface JournalEntryLineItem {
   type: string;
   postingType?: string;
   dimension?: string;
+  ledgerAccountId?: string;
   accountRef?: {
     value: string;
     name: string;
@@ -39,6 +40,7 @@ const journalEntryLineItemSchema = new Schema<JournalEntryLineItem>({
   type: String,
   postingType: String,
   dimension: String,
+  ledgerAccountId: String,
   accountRef: {
     value: String,
     name: String,
