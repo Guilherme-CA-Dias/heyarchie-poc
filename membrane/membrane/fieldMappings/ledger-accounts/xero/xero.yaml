@@ -1,0 +1,71 @@
+key: ledger-accounts
+state: READY
+errors: []
+isDeactivated: false
+id: 68644adf1cba9ea888b27f3a
+name: Ledger Accounts
+customized: false
+universalFieldMappingId: 68644adf1cba9ea888b27f29
+integrationId: 68641c5eab44ea46f8be9697
+dataSourceKey: ledger-accounts
+direction: import
+defaultImportValue:
+  $var: $
+defaultExportValue:
+  $var: $
+exportValue:
+  Code:
+    $var: $.code
+  Name:
+    $var: $.name
+  Type:
+    $var: $.type
+  Status:
+    $var: $.status
+  Description:
+    $var: $.description
+  CurrencyCode:
+    $var: $.currency
+importValue:
+  id:
+    $var: $.AccountID
+  name:
+    $var: $.Name
+  code:
+    $var: $.Code
+  description:
+    $var: $.Description
+  classification:
+    $var: $.Class
+  type:
+    $var: $.Type
+  status:
+    $var: $.Status
+  currency:
+    $var: $.CurrencyCode
+  updatedTime:
+    $var: $.UpdatedDateUTC
+integration:
+  key: xero
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9697
+  name: Xero
+  uuid: e263dafc-5128-42e1-a608-74649861069a
+  connectorId: 642c613b986ed1caad98172b
+  hasMissingParameters: false
+  hasDocumentation: false
+  hasOperations: true
+  hasData: true
+  hasEvents: true
+  hasGlobalWebhooks: true
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/91877efa-787d-4858-80d8-3d46e99bb21b
+  connectorVersion: 1.1.4
+  logoUri: https://static.integration.app/connectors/xero-connector/logo.png
+  dataCollectionsCount: 17
+  operationsCount: 234
+  eventsCount: 1
+  authType: oauth2
+integrationKey: xero

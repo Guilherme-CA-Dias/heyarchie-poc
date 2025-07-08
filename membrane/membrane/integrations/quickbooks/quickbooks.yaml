@@ -1,0 +1,6 @@
+id: 68641c5eab44ea46f8be9699
+key: quickbooks
+name: Quickbooks
+connectorId: 642b0c74c594903351a00870
+baseUri: s3://integration-app-connectors/public/05de4b46-7030-4907-8508-b840098b4b83
+connectorVersion: 1.1.13

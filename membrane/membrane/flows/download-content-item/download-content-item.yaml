@@ -1,0 +1,49 @@
+key: download-content-item
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dc6f6434b150283c8ab
+name: Download Content Item
+nodes:
+  api-trigger:
+    type: api-trigger
+    name: API Trigger
+    config:
+      inputSchema:
+        type: object
+        properties:
+          documentId:
+            type: string
+    links:
+      - key: download-file-or-markdown
+  api-request-to-your-app:
+    type: api-request-to-your-app
+    name: API Request to Your App
+    config:
+      request:
+        uri: /api/webhooks/on-download-complete
+        method: POST
+        body:
+          documentId:
+            $var: $.input.api-trigger.documentId
+          text:
+            $var: $.input.download-file-or-markdown.content
+          connectionId:
+            $var: $.connection.id
+          downloadURI:
+            $var: $.input.download-file-or-markdown.downloadURI
+    links: []
+  download-file-or-markdown:
+    type: run-action
+    name: Download file or markdown
+    config:
+      action:
+        key: download-content-item
+      input:
+        id:
+          $var: $.input.api-trigger.documentId
+    links:
+      - key: api-request-to-your-app
+autoCreateInstances: false
+customized: false
+isDeployed: false

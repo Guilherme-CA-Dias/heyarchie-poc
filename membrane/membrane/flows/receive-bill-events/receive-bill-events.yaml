@@ -1,0 +1,92 @@
+key: receive-bill-events
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd58a934c7cd83b15aa39
+name: Receive Bill Events
+nodes:
+  bill-created-trigger:
+    type: data-record-created-trigger
+    name: Bill Created Trigger
+    config:
+      dataSource:
+        key: bills
+    links:
+      - key: get-all-bill-fields-by-id
+  bill-updated-trigger:
+    type: data-record-updated-trigger
+    name: Bill Updated Trigger
+    config:
+      dataSource:
+        key: bills
+    links:
+      - key: get-all-bill-fields-by-id2
+  get-all-bill-fields-by-id:
+    type: find-data-record-by-id
+    name: Get all Bill fields by Id
+    config:
+      dataSource:
+        key: bills
+      fieldMapping:
+        key: bills
+        includeRawFields: true
+      id:
+        $var: $.input.bill-created-trigger.record.id
+    links:
+      - key: create-bill-in-my-app
+  get-all-bill-fields-by-id2:
+    type: find-data-record-by-id
+    name: Get all Bill fields by Id
+    config:
+      dataSource:
+        key: bills
+      id:
+        $var: $.input.bill-updated-trigger.record.id
+      fieldMapping:
+        key: bills
+        includeRawFields: true
+    links:
+      - key: update-bill-in-my-app
+  create-bill-in-my-app:
+    type: api-request-to-your-app
+    name: Create Bill in my App
+    config:
+      request:
+        body:
+          externalBillId:
+            $var: $.input.get-all-bill-fields-by-id.id
+          data:
+            $var: $.input.get-all-bill-fields-by-id
+    links: []
+  update-bill-in-my-app:
+    type: api-request-to-your-app
+    name: Update Bill in my App
+    config:
+      request:
+        body:
+          externalBillId:
+            $var: $.input.get-all-bill-fields-by-id2.id
+          data:
+            $var: $.input.get-all-bill-fields-by-id2
+    links: []
+  delete-bill-in-my-app:
+    type: api-request-to-your-app
+    name: Delete Bill from My App
+    config:
+      request:
+        body:
+          externalBillId:
+            $var: $.input.bill-deleted-trigger.record.id
+        method: POST
+    links: []
+  bill-deleted-trigger:
+    type: data-record-deleted-trigger
+    name: Bill Deleted Trigger
+    config:
+      dataSource:
+        key: bills
+    links:
+      - key: delete-bill-in-my-app
+autoCreateInstances: false
+customized: false
+isDeployed: false

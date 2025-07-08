@@ -1,0 +1,36 @@
+key: content-items
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dc784f467360cbe33fc
+name: Content Items
+integrationId: 685d5dbf84f467360cbe3255
+customized: true
+universalDataSourceId: 685d5dc5b2f623353bd677e5
+collectionKey: items
+udm: documents
+defaultPath: /data/items
+integration:
+  key: google-drive
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 685d5dbf84f467360cbe3255
+  name: Google Drive
+  uuid: f3cdfbb3-deb1-42b3-b708-6ca872deccf3
+  connectorId: 642e822e986ed1caad090f1d
+  hasMissingParameters: false
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/d1f5bf8e-f797-4dac-9905-69508b96be2c
+  connectorVersion: 2.5.0
+  logoUri: https://static.integration.app/connectors/gdrive/logo.png
+  dataCollectionsCount: 3
+  operationsCount: 51
+  eventsCount: 0
+  authType: oauth2
+integrationKey: google-drive

@@ -1,0 +1,99 @@
+key: receive-content-item-events
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dc640530a09e9b9a37c
+name: Receive Content Item Events
+nodes:
+  find-record-by-id:
+    type: find-data-record-by-id
+    name: Find record-by-id
+    config:
+      dataSource:
+        key: content-items
+      id:
+        $var: $.input.content-item-created-trigger.record.id
+      fieldMapping:
+        key: content-items
+    links:
+      - key: send-created-event-to-my-app
+  find-data-record-by-id:
+    type: find-data-record-by-id
+    name: Find Data Record By Id
+    config:
+      dataSource:
+        key: content-items
+      id:
+        $var: $.input.content-item-updated-trigger.record.id
+      fieldMapping:
+        key: content-items
+    links:
+      - key: send-updated-request-to-your-app
+  send-created-event-to-my-app:
+    type: api-request-to-your-app
+    name: Send created Event to My App
+    config:
+      request:
+        uri: /api/webhooks/on-create
+        method: POST
+        body:
+          fields:
+            $var: $.input.find-record-by-id.fields
+          connectionId:
+            $var: $.connection.id
+    links: []
+  send-deleted-event-to-my-app:
+    type: api-request-to-your-app
+    name: Send deleted event to My App
+    config:
+      request:
+        method: POST
+        body:
+          id:
+            $var: $.input.content-item-deleted-trigger.record.id
+        uri: /api/webhooks/on-delete
+    links: []
+  send-updated-request-to-your-app:
+    type: api-request-to-your-app
+    name: Send Updated request to your app
+    config:
+      request:
+        uri: /api/webhooks/on-update
+        method: POST
+        body:
+          connectionId:
+            $var: $.connection.id
+          fields:
+            $var: $.input.find-data-record-by-id.fields
+    links: []
+  content-item-created-trigger:
+    type: data-record-created-trigger
+    name: Content Item Created Trigger
+    config:
+      dataSource:
+        key: content-items
+      fieldMapping:
+        key: content-items
+    links:
+      - key: find-record-by-id
+  content-item-deleted-trigger:
+    type: data-record-deleted-trigger
+    name: Content Item Deleted Trigger
+    config:
+      dataSource:
+        key: content-items
+    links:
+      - key: send-deleted-event-to-my-app
+  content-item-updated-trigger:
+    type: data-record-updated-trigger
+    name: Content Item Updated Trigger
+    config:
+      dataSource:
+        key: content-items
+      fieldMapping:
+        key: content-items
+    links:
+      - key: find-data-record-by-id
+autoCreateInstances: true
+customized: false
+isDeployed: true

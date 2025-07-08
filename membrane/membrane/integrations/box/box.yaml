@@ -1,0 +1,6 @@
+id: 685d5dbdd25a030de8c988de
+key: box
+name: Box
+connectorId: 6466783c60f981f3ce6968ef
+baseUri: s3://integration-app-connectors/public/ccc997a3-9504-439c-930d-054a03172fc2
+connectorVersion: 2.2.2

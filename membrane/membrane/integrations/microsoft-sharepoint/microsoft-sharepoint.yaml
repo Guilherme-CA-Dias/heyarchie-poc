@@ -1,0 +1,6 @@
+id: 685d5dc07109c1a095699f52
+key: microsoft-sharepoint
+name: Microsoft Sharepoint
+connectorId: 6466784d60f981f3ce696906
+baseUri: s3://integration-app-connectors/public/2b8ac8d1-af69-4d4b-98c3-d08dfb046f44
+connectorVersion: 2.5.1

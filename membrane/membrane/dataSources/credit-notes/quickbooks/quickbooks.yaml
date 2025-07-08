@@ -1,0 +1,36 @@
+key: credit-notes
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd5f567c93e291249d2d2
+name: Credit Notes
+integrationId: 68641c5eab44ea46f8be9699
+customized: false
+universalDataSourceId: 686bd5f567c93e291249d2c7
+collectionKey: creditmemos
+udm: credit-notes
+defaultPath: /data/creditmemos
+integration:
+  key: quickbooks
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9699
+  name: Quickbooks
+  uuid: 7c32c4b9-ed25-4e00-ab19-f1c875c875f4
+  connectorId: 642b0c74c594903351a00870
+  hasMissingParameters: false
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/05de4b46-7030-4907-8508-b840098b4b83
+  connectorVersion: 1.1.13
+  logoUri: https://static.integration.app/connectors/quickbooks-connector/logo.png
+  dataCollectionsCount: 31
+  operationsCount: 86
+  eventsCount: 0
+  authType: oauth2
+integrationKey: quickbooks

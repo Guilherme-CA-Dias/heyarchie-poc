@@ -1,0 +1,22 @@
+isCustomized: false
+key: get-credit-notes
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd5f567c93e291249d312
+name: Get Credit Notes
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+config:
+  dataSource:
+    key: credit-notes
+  cursor:
+    $var: $.input.cursor
+  fieldMapping:
+    key: credit-notes
+    includeRawFields: true
+isDeployed: true

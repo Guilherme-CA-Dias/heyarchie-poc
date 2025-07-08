@@ -1,0 +1,6 @@
+id: 685d5dc11235674df4daa202
+key: onedrive
+name: MS OneDrive
+connectorId: 652677b570089fac484d1a34
+baseUri: s3://integration-app-connectors/public/7ccac466-e5bd-4506-8633-5dba059a659c
+connectorVersion: 2.2.1

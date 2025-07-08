@@ -1,0 +1,82 @@
+key: payments
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd6bc592000cd3943942c
+name: Payments
+customized: true
+universalFieldMappingId: 686bd6bc592000cd39439416
+integrationId: 68641c5eab44ea46f8be9697
+dataSourceKey: payments
+direction: import
+defaultImportValue:
+  $var: $
+defaultExportValue:
+  $var: $
+exportValue:
+  Account:
+    AccountID:
+      $var: $.ledgerAccountId
+  Date:
+    $var: $.transactionDate
+  CurrencyRate:
+    $var: $.exchangeRate
+  Amount:
+    $var: $.totalAmount
+  Status:
+    $var: $.status
+  PaymentID:
+    $var: $.id
+importValue:
+  id:
+    $var: $.PaymentID
+  type:
+    $var: $.PaymentType
+  exchangeRate:
+    $var: $.CurrencyRate
+  totalAmount:
+    $var: $.Amount
+  accountId:
+    $var: $.Account.AccountID
+  transactionDate:
+    $var: $.Date
+  ledgerAccountId:
+    $var: $.Account.AccountID
+  classification: Payment
+  lineItems:
+    $iterate:
+      source:
+        $var: $.Invoice.LineItems
+      item:
+        id:
+          $var: $.item.LineItemID
+        description:
+          $var: $.item.Description
+        amount:
+          $var: $.item.LineAmount
+        ledgerAccountId:
+          $var: $.item.AccountID
+integration:
+  key: xero
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9697
+  name: Xero
+  uuid: e263dafc-5128-42e1-a608-74649861069a
+  connectorId: 642c613b986ed1caad98172b
+  hasMissingParameters: false
+  hasDocumentation: false
+  hasOperations: true
+  hasData: true
+  hasEvents: true
+  hasGlobalWebhooks: true
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/91877efa-787d-4858-80d8-3d46e99bb21b
+  connectorVersion: 1.1.4
+  logoUri: https://static.integration.app/connectors/xero-connector/logo.png
+  dataCollectionsCount: 17
+  operationsCount: 234
+  eventsCount: 1
+  authType: oauth2
+integrationKey: xero

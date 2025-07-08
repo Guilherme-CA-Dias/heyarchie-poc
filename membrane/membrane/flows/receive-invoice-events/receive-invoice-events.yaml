@@ -1,0 +1,92 @@
+key: receive-invoice-events
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd57c6102bed995a18c80
+name: Receive Invoice Events
+nodes:
+  invoice-created-trigger:
+    type: data-record-created-trigger
+    name: Invoice Created Trigger
+    config:
+      dataSource:
+        key: invoices
+    links:
+      - key: get-all-invoice-fields-by-id
+  invoice-updated-trigger:
+    type: data-record-updated-trigger
+    name: Invoice Updated Trigger
+    config:
+      dataSource:
+        key: invoices
+    links:
+      - key: get-all-invoice-fields-by-id2
+  get-all-invoice-fields-by-id:
+    type: find-data-record-by-id
+    name: Get all Invoice fields by Id
+    config:
+      dataSource:
+        key: invoices
+      fieldMapping:
+        key: invoices
+        includeRawFields: true
+      id:
+        $var: $.input.invoice-created-trigger.record.id
+    links:
+      - key: create-invoice-in-my-app
+  get-all-invoice-fields-by-id2:
+    type: find-data-record-by-id
+    name: Get all Invoice fields by Id
+    config:
+      dataSource:
+        key: invoices
+      id:
+        $var: $.input.invoice-updated-trigger.record.id
+      fieldMapping:
+        key: invoices
+        includeRawFields: true
+    links:
+      - key: update-invoice-in-my-app
+  create-invoice-in-my-app:
+    type: api-request-to-your-app
+    name: Create Invoice in my App
+    config:
+      request:
+        body:
+          externalInvoiceId:
+            $var: $.input.get-all-invoice-fields-by-id.id
+          data:
+            $var: $.input.get-all-invoice-fields-by-id
+    links: []
+  update-invoice-in-my-app:
+    type: api-request-to-your-app
+    name: Update Invoice in my App
+    config:
+      request:
+        body:
+          externalInvoiceId:
+            $var: $.input.get-all-invoice-fields-by-id2.id
+          data:
+            $var: $.input.get-all-invoice-fields-by-id2
+    links: []
+  delete-invoice-in-my-app:
+    type: api-request-to-your-app
+    name: Delete Invoice from My App
+    config:
+      request:
+        body:
+          externalInvoiceId:
+            $var: $.input.invoice-deleted-trigger.record.id
+        method: POST
+    links: []
+  invoice-deleted-trigger:
+    type: data-record-deleted-trigger
+    name: Invoice Deleted Trigger
+    config:
+      dataSource:
+        key: invoices
+    links:
+      - key: delete-invoice-in-my-app
+autoCreateInstances: false
+customized: false
+isDeployed: false

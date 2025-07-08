@@ -1,0 +1,75 @@
+key: download-content-item
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dd38894879a21a0d087
+name: Download Content Item
+universalFlowId: 685d5dc6f6434b150283c8ab
+integrationId: 685d5dbdd25a030de8c988de
+integration:
+  key: box
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 685d5dbdd25a030de8c988de
+  name: Box
+  uuid: ff526135-e374-4f8c-a575-893c588c3711
+  connectorId: 6466783c60f981f3ce6968ef
+  hasMissingParameters: false
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: true
+  hasGlobalWebhooks: true
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/ccc997a3-9504-439c-930d-054a03172fc2
+  connectorVersion: 2.2.2
+  logoUri: https://static.integration.app/connectors/box/logo.png
+  dataCollectionsCount: 6
+  operationsCount: 264
+  eventsCount: 1
+  authType: oauth2
+nodes:
+  api-trigger:
+    type: api-trigger
+    name: API Trigger
+    config:
+      inputSchema:
+        type: object
+        properties:
+          documentId:
+            type: string
+    links:
+      - key: download-file-or-markdown
+  api-request-to-your-app:
+    type: api-request-to-your-app
+    name: API Request to Your App
+    config:
+      request:
+        uri: /api/webhooks/on-download-complete
+        method: POST
+        body:
+          documentId:
+            $var: $.input.api-trigger.documentId
+          text:
+            $var: $.input.download-file-or-markdown.content
+          connectionId:
+            $var: $.connection.id
+          downloadURI:
+            $var: $.input.download-file-or-markdown.downloadURI
+    links: []
+  download-file-or-markdown:
+    type: run-action
+    name: Download file or markdown
+    config:
+      action:
+        key: download-content-item
+      input:
+        id:
+          $var: $.input.api-trigger.documentId
+    links:
+      - key: api-request-to-your-app
+autoCreateInstances: false
+customized: false
+isDeployed: false
+integrationKey: box

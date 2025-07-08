@@ -1,0 +1,22 @@
+isCustomized: true
+key: get-sales-receipts
+state: READY
+errors: []
+isDeactivated: false
+id: 686bdcee0169823ba115dd20
+name: Get Sales Receipts
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+config:
+  dataSource:
+    key: sales-receipt
+  cursor:
+    $var: $.input.cursor
+  fieldMapping:
+    key: sales-receipt
+    includeRawFields: true
+isDeployed: true

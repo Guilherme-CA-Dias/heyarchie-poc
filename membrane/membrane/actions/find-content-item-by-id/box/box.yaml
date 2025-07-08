@@ -1,0 +1,24 @@
+isCustomized: false
+parentId: 685d5dc284f467360cbe3307
+integrationId: 685d5dbdd25a030de8c988de
+key: find-content-item-by-id
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dcd40530a09e9b9a482
+name: Find Content Item By Id
+type: find-data-record-by-id
+inputSchema:
+  type: object
+  properties:
+    id:
+      type: string
+config:
+  dataSource:
+    key: content-items
+  id:
+    $var: $.input.id
+  fieldMapping:
+    key: content-items
+isDeployed: false
+integrationKey: box

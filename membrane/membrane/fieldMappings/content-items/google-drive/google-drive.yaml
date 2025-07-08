@@ -1,0 +1,106 @@
+key: content-items
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dcd2443759ffb2bdbd1
+name: Content Items
+customized: true
+universalFieldMappingId: 685d5dc6fde096f269c29521
+integrationId: 685d5dbf84f467360cbe3255
+dataSourceKey: content-items
+appSchema:
+  type: object
+  properties:
+    id:
+      type: string
+    title:
+      type: string
+    createdAt:
+      type: string
+    updatedAt:
+      type: string
+    parentId:
+      type: string
+    canHaveChildren:
+      type: boolean
+    resourceURI:
+      type: string
+    canDownload:
+      type: boolean
+direction: import
+defaultImportValue:
+  id:
+    $var: $.id
+  title:
+    $var: $.title
+  createdAt:
+    $var: $.createdTime
+  updatedAt:
+    $var: $.updatedTime
+  parentId:
+    $var: $.parentDocumentId
+  canHaveChildren:
+    $var: $.canHaveChildren
+  resourceURI:
+    $var: $.uri
+  isDownloadable:
+    $var: $.isDownloadable
+importValue:
+  id:
+    $var: $.id
+  createdAt:
+    $var: $.createdTime
+  resourceURI:
+    $var: $.webViewLink
+  title:
+    $var: $.name
+  updatedAt:
+    $var: $.modifiedTime
+  parentId:
+    $var: $.folderId
+  canHaveChildren:
+    $map:
+      value:
+        $var: $.type
+      mapping:
+        - from: file
+          to: false
+        - from: folder
+          to: true
+        - from: drive
+          to: true
+  canDownload:
+    $map:
+      value:
+        $var: $.type
+      mapping:
+        - from: file
+          to: true
+        - from: folder
+          to: false
+        - from: drive
+          to: false
+integration:
+  key: google-drive
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 685d5dbf84f467360cbe3255
+  name: Google Drive
+  uuid: f3cdfbb3-deb1-42b3-b708-6ca872deccf3
+  connectorId: 642e822e986ed1caad090f1d
+  hasMissingParameters: false
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/d1f5bf8e-f797-4dac-9905-69508b96be2c
+  connectorVersion: 2.5.0
+  logoUri: https://static.integration.app/connectors/gdrive/logo.png
+  dataCollectionsCount: 3
+  operationsCount: 51
+  eventsCount: 0
+  authType: oauth2
+integrationKey: google-drive

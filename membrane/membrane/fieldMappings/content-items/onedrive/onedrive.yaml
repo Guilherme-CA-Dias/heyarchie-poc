@@ -1,0 +1,96 @@
+key: content-items
+state: CONFIGURATION_ERROR
+errors:
+  - message: Integration Dependency has error(s)
+    type: dependency_error
+    data:
+      workspaceElementReference:
+        type: integration
+        id: 685d5dc11235674df4daa202
+  - message: Data Source Dependency has error(s)
+    type: dependency_error
+    data:
+      workspaceElementReference:
+        type: data-source
+        id: 685d5dc81120e413c751ac03
+isDeactivated: false
+id: 685d5dce232b6306f2585809
+name: Content Items
+customized: true
+universalFieldMappingId: 685d5dc6fde096f269c29521
+integrationId: 685d5dc11235674df4daa202
+dataSourceKey: content-items
+direction: import
+defaultImportValue:
+  id:
+    $var: $.id
+  title:
+    $var: $.title
+  createdAt:
+    $var: $.createdTime
+  updatedAt:
+    $var: $.updatedTime
+  parentId:
+    $var: $.parentDocumentId
+  canHaveChildren:
+    $var: $.canHaveChildren
+  resourceURI:
+    $var: $.uri
+importValue:
+  id:
+    $var: $.id
+  title:
+    $var: $.name
+  createdAt:
+    $var: $.createdDateTime
+  updatedAt:
+    $var: $.lastModifiedDateTime
+  parentId:
+    $var: $.parentFolderId
+  resourceURI:
+    $var: $.webUrl
+  canHaveChildren:
+    $map:
+      value:
+        $var: $.itemType
+      mapping:
+        - from: file
+          to: false
+        - from: folder
+          to: true
+  canDownload:
+    $map:
+      value:
+        $var: $.itemType
+      mapping:
+        - from: file
+          to: true
+        - from: folder
+          to: false
+integration:
+  key: onedrive
+  state: CONFIGURATION_ERROR
+  errors:
+    - message: Integration is missing required parameters
+      type: configuration
+  isDeactivated: false
+  id: 685d5dc11235674df4daa202
+  name: MS OneDrive
+  uuid: a4762ff2-c287-4942-b00b-3f9790495b4c
+  connectorId: 652677b570089fac484d1a34
+  hasMissingParameters: true
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/7ccac466-e5bd-4506-8633-5dba059a659c
+  connectorVersion: 2.2.1
+  logoUri: >-
+    https://static.integration.app/connectors/onedrive/logo-8a1d93a1-ba8e-4127-93f5-ca45f899d879.png
+  dataCollectionsCount: 2
+  operationsCount: 2
+  eventsCount: 0
+  authType: oauth2
+integrationKey: onedrive

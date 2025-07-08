@@ -1,0 +1,101 @@
+key: receive-sales-receipt-events
+state: READY
+errors: []
+isDeactivated: false
+id: 686d274239123b0f107744e7
+name: Receive Sales Receipt events
+universalFlowId: 686bdcf9becebcf6822c91fb
+integrationId: 68641c5eab44ea46f8be9697
+integration:
+  key: xero
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9697
+  name: Xero
+  uuid: e263dafc-5128-42e1-a608-74649861069a
+  connectorId: 642c613b986ed1caad98172b
+  hasMissingParameters: false
+  hasDocumentation: false
+  hasOperations: true
+  hasData: true
+  hasEvents: true
+  hasGlobalWebhooks: true
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/91877efa-787d-4858-80d8-3d46e99bb21b
+  connectorVersion: 1.1.4
+  logoUri: https://static.integration.app/connectors/xero-connector/logo.png
+  dataCollectionsCount: 17
+  operationsCount: 234
+  eventsCount: 1
+  authType: oauth2
+nodes:
+  data-record-created-trigger:
+    type: data-record-created-trigger
+    name: Data Record Created Trigger
+    config:
+      dataSource:
+        key: sales-receipt
+      fieldMapping: {}
+    links:
+      - key: find-data-record-by-id
+  data-record-updated-trigger:
+    type: data-record-updated-trigger
+    name: Data Record Updated Trigger
+    config:
+      dataSource:
+        key: sales-receipt
+      fieldMapping:
+        key: null
+    links:
+      - key: find-data-record-by-id-1
+  data-record-deleted-trigger:
+    type: data-record-deleted-trigger
+    name: Data Record Deleted Trigger
+    config:
+      fieldMapping: {}
+      dataSource: {}
+    links:
+      - key: api-request-to-your-app
+  find-data-record-by-id:
+    type: find-data-record-by-id
+    name: Find Data Record By Id
+    config:
+      dataSource:
+        key: sales-receipt
+      fieldMapping:
+        key: sales-receipt
+        includeRawFields: true
+      id:
+        $var: $.input.data-record-created-trigger.record.id
+    links:
+      - key: api-request-to-your-app-1
+  find-data-record-by-id-1:
+    type: find-data-record-by-id
+    name: Find Data Record By Id
+    config:
+      dataSource:
+        key: sales-receipt
+      id:
+        $var: $.input.data-record-updated-trigger.record.id
+      fieldMapping:
+        key: sales-receipt
+        includeRawFields: true
+    links:
+      - key: api-request-to-your-app-2
+  api-request-to-your-app:
+    type: api-request-to-your-app
+    name: API Request to Your App
+    links: []
+  api-request-to-your-app-1:
+    type: api-request-to-your-app
+    name: API Request to Your App
+    links: []
+  api-request-to-your-app-2:
+    type: api-request-to-your-app
+    name: API Request to Your App
+    links: []
+autoCreateInstances: true
+customized: false
+isDeployed: true
+integrationKey: xero

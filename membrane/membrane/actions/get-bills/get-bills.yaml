@@ -1,0 +1,22 @@
+isCustomized: false
+key: get-bills
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd58a934c7cd83b15aa22
+name: Get Bills
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+config:
+  dataSource:
+    key: bills
+  cursor:
+    $var: $.input.cursor
+  fieldMapping:
+    key: bills
+    includeRawFields: true
+isDeployed: true

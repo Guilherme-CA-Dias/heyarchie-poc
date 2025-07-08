@@ -1,0 +1,98 @@
+key: content-items
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dcd40530a09e9b9a48c
+name: Content Items
+customized: true
+universalFieldMappingId: 685d5dc6fde096f269c29521
+integrationId: 685d5dbdd25a030de8c988de
+dataSourceKey: content-items
+appSchema:
+  type: object
+  properties:
+    id:
+      type: string
+    title:
+      type: string
+    createdAt:
+      type: string
+    updatedAt:
+      type: string
+    parentId:
+      type: string
+    canHaveChildren:
+      type: boolean
+    resourceURI:
+      type: string
+direction: import
+defaultImportValue:
+  id:
+    $var: $.id
+  title:
+    $var: $.title
+  createdAt:
+    $var: $.createdTime
+  updatedAt:
+    $var: $.updatedTime
+  parentId:
+    $var: $.parentDocumentId
+  canHaveChildren:
+    $var: $.canHaveChildren
+  resourceURI:
+    $var: $.uri
+importValue:
+  id:
+    $var: $.id
+  title:
+    $var: $.name
+  createdAt:
+    $var: $.content_created_at
+  updatedAt:
+    $var: $.content_modified_at
+  parentId:
+    $var: $.folder_id
+  canHaveChildren:
+    $map:
+      value:
+        $var: $.type
+      mapping:
+        - from: file
+          to: false
+        - from: folder
+          to: true
+  resourceURI:
+    $var: $.shared_link.url
+  canDownload:
+    $map:
+      value:
+        $var: $.type
+      mapping:
+        - from: file
+          to: true
+        - from: folder
+          to: false
+integration:
+  key: box
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 685d5dbdd25a030de8c988de
+  name: Box
+  uuid: ff526135-e374-4f8c-a575-893c588c3711
+  connectorId: 6466783c60f981f3ce6968ef
+  hasMissingParameters: false
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: true
+  hasGlobalWebhooks: true
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/ccc997a3-9504-439c-930d-054a03172fc2
+  connectorVersion: 2.2.2
+  logoUri: https://static.integration.app/connectors/box/logo.png
+  dataCollectionsCount: 6
+  operationsCount: 264
+  eventsCount: 1
+  authType: oauth2
+integrationKey: box

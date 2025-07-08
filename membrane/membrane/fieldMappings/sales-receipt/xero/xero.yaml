@@ -1,0 +1,60 @@
+key: sales-receipt
+state: READY
+errors: []
+isDeactivated: false
+id: 686d21a6618f7303bfc13b88
+name: Sales Receipt
+customized: true
+universalFieldMappingId: 686d219b618f7303bfc13a2d
+integrationId: 68641c5eab44ea46f8be9697
+dataSourceKey: sales-receipt
+direction: import
+importValue:
+  account:
+    $var: $.BankAccount.AccountID
+  totalAmount:
+    $var: $.Total
+  transactionDate:
+    $var: $.Date
+  lineItems:
+    $iterate:
+      source:
+        $var: $.LineItems
+      item:
+        description:
+          $var: $.item.Description
+        amount:
+          $var: $.item.UnitAmount
+        ledgerAccountId:
+          $var: $.item.AccountID
+        id:
+          $var: $.item.LineItemID
+  description:
+    $var: $.Reference
+  classification: Sales Receipt
+  id:
+    $var: $.BankTransactionID
+integration:
+  key: xero
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9697
+  name: Xero
+  uuid: e263dafc-5128-42e1-a608-74649861069a
+  connectorId: 642c613b986ed1caad98172b
+  hasMissingParameters: false
+  hasDocumentation: false
+  hasOperations: true
+  hasData: true
+  hasEvents: true
+  hasGlobalWebhooks: true
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/91877efa-787d-4858-80d8-3d46e99bb21b
+  connectorVersion: 1.1.4
+  logoUri: https://static.integration.app/connectors/xero-connector/logo.png
+  dataCollectionsCount: 17
+  operationsCount: 234
+  eventsCount: 1
+  authType: oauth2
+integrationKey: xero

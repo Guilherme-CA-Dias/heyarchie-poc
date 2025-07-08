@@ -1,0 +1,14 @@
+key: somegod
+isDeactivated: false
+id: 685d5dc5f6434b150283c898
+name: somegod
+globalWebhookUri: >-
+  https://api.integration.app/webhooks/app-events/8b48b3ae-6f9f-4951-b04c-5ff718d73f1e
+schema:
+  type: object
+  properties:
+    id:
+      type: string
+    someKey:
+      type: string
+  title: Schema

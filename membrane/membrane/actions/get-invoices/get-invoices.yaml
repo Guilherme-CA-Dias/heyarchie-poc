@@ -1,0 +1,22 @@
+isCustomized: false
+key: get-invoices
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd57c6102bed995a18c56
+name: Get Invoices
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+config:
+  dataSource:
+    key: invoices
+  cursor:
+    $var: $.input.cursor
+  fieldMapping:
+    key: invoices
+    includeRawFields: true
+isDeployed: true

@@ -1,0 +1,121 @@
+key: receive-bill-events
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd58a934c7cd83b15aa6b
+name: Receive Bill Events
+universalFlowId: 686bd58a934c7cd83b15aa39
+integrationId: 68641c5eab44ea46f8be9699
+integration:
+  key: quickbooks
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9699
+  name: Quickbooks
+  uuid: 7c32c4b9-ed25-4e00-ab19-f1c875c875f4
+  connectorId: 642b0c74c594903351a00870
+  hasMissingParameters: false
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/05de4b46-7030-4907-8508-b840098b4b83
+  connectorVersion: 1.1.13
+  logoUri: https://static.integration.app/connectors/quickbooks-connector/logo.png
+  dataCollectionsCount: 31
+  operationsCount: 86
+  eventsCount: 0
+  authType: oauth2
+nodes:
+  bill-created-trigger:
+    type: data-record-created-trigger
+    name: Bill Created Trigger
+    config:
+      dataSource:
+        key: bills
+      fieldMapping: {}
+    links:
+      - key: get-all-bill-fields-by-id
+  bill-updated-trigger:
+    type: data-record-updated-trigger
+    name: Bill Updated Trigger
+    config:
+      dataSource:
+        key: bills
+      fieldMapping: {}
+    links:
+      - key: get-all-bill-fields-by-id2
+  get-all-bill-fields-by-id:
+    type: find-data-record-by-id
+    name: Get all Bill fields by Id
+    config:
+      dataSource:
+        key: bills
+      fieldMapping:
+        key: bills
+        includeRawFields: true
+      id:
+        $var: $.input.bill-created-trigger.record.id
+    links:
+      - key: create-bill-in-my-app
+  get-all-bill-fields-by-id2:
+    type: find-data-record-by-id
+    name: Get all Bill fields by Id
+    config:
+      dataSource:
+        key: bills
+      id:
+        $var: $.input.bill-updated-trigger.record.id
+      fieldMapping:
+        key: bills
+        includeRawFields: true
+    links:
+      - key: update-bill-in-my-app
+  create-bill-in-my-app:
+    type: api-request-to-your-app
+    name: Create Bill in my App
+    config:
+      request:
+        body:
+          externalBillId:
+            $var: $.input.get-all-bill-fields-by-id.id
+          data:
+            $var: $.input.get-all-bill-fields-by-id
+    links: []
+  update-bill-in-my-app:
+    type: api-request-to-your-app
+    name: Update Bill in my App
+    config:
+      request:
+        body:
+          externalBillId:
+            $var: $.input.get-all-bill-fields-by-id2.id
+          data:
+            $var: $.input.get-all-bill-fields-by-id2
+    links: []
+  delete-bill-in-my-app:
+    type: api-request-to-your-app
+    name: Delete Bill from My App
+    config:
+      request:
+        body:
+          externalBillId:
+            $var: $.input.bill-deleted-trigger.record.id
+        method: POST
+    links: []
+  bill-deleted-trigger:
+    type: data-record-deleted-trigger
+    name: Bill Deleted Trigger
+    config:
+      dataSource:
+        key: bills
+      fieldMapping: {}
+    links:
+      - key: delete-bill-in-my-app
+autoCreateInstances: false
+customized: false
+isDeployed: false
+integrationKey: quickbooks

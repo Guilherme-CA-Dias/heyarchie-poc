@@ -1,0 +1,13 @@
+key: credit-notes
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd5f567c93e291249d2e4
+name: Credit Notes
+customized: false
+dataSourceKey: credit-notes
+direction: import
+defaultImportValue:
+  $var: $
+defaultExportValue:
+  $var: $

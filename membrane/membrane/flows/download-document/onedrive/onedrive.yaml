@@ -1,0 +1,83 @@
+key: download-document
+state: CONFIGURATION_ERROR
+errors:
+  - message: Integration Dependency has error(s)
+    type: dependency_error
+    data:
+      workspaceElementReference:
+        type: integration
+        id: 685d5dc11235674df4daa202
+isDeactivated: false
+id: 685d5dda1235674df4daa50d
+name: Download Document
+integrationId: 685d5dc11235674df4daa202
+integration:
+  key: onedrive
+  state: CONFIGURATION_ERROR
+  errors:
+    - message: Integration is missing required parameters
+      type: configuration
+  isDeactivated: false
+  id: 685d5dc11235674df4daa202
+  name: MS OneDrive
+  uuid: a4762ff2-c287-4942-b00b-3f9790495b4c
+  connectorId: 652677b570089fac484d1a34
+  hasMissingParameters: true
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/7ccac466-e5bd-4506-8633-5dba059a659c
+  connectorVersion: 2.2.1
+  logoUri: >-
+    https://static.integration.app/connectors/onedrive/logo-8a1d93a1-ba8e-4127-93f5-ca45f899d879.png
+  dataCollectionsCount: 2
+  operationsCount: 2
+  eventsCount: 0
+  authType: oauth2
+nodes:
+  api-trigger:
+    type: api-trigger
+    name: API Trigger
+    config:
+      inputSchema:
+        type: object
+        properties:
+          documentId:
+            type: string
+    links:
+      - key: download-file-or-markdown
+  api-request-to-your-app:
+    type: api-request-to-your-app
+    name: API Request to Your App
+    config:
+      request:
+        uri: /api/webhooks/on-download-complete
+        method: POST
+        body:
+          documentId:
+            $var: $.input.api-trigger.documentId
+          text:
+            $var: $.input.download-file-or-markdown.content
+          connectionId:
+            $var: $.connection.id
+          downloadURI:
+            $var: $.input.download-file-or-markdown.downloadURI
+    links: []
+  download-file-or-markdown:
+    type: run-action
+    name: Download file or markdown
+    config:
+      action:
+        key: download-document-by-id
+      input:
+        id:
+          $var: $.input.api-trigger.documentId
+    links:
+      - key: api-request-to-your-app
+autoCreateInstances: false
+customized: false
+isDeployed: false
+integrationKey: onedrive

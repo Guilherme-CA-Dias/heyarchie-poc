@@ -1,0 +1,17 @@
+key: sales-receipt
+state: READY
+errors: []
+isDeactivated: false
+id: 686d219b618f7303bfc13a2d
+name: Sales Receipt
+customized: true
+dataSourceKey: sales-receipt
+direction: import
+defaultImportValue:
+  ledgerAccountId: null
+  totalAmount: null
+  transactionDate: null
+  lineItems: null
+  dimensions: ''
+  classification: null
+  id: null

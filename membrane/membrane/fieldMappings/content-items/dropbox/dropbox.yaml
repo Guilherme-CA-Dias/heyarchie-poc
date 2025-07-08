@@ -1,0 +1,102 @@
+key: content-items
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dcd7109c1a09569a097
+name: Content Items
+customized: true
+universalFieldMappingId: 685d5dc6fde096f269c29521
+integrationId: 685d5dbe2443759ffb2bd96c
+dataSourceKey: content-items
+appSchema:
+  type: object
+  properties:
+    id:
+      type: string
+    title:
+      type: string
+    createdAt:
+      type: string
+    updatedAt:
+      type: string
+    parentId:
+      type: string
+    canHaveChildren:
+      type: boolean
+    resourceURI:
+      type: string
+    canDownload:
+      type: boolean
+direction: import
+defaultImportValue:
+  id:
+    $var: $.id
+  title:
+    $var: $.title
+  createdAt:
+    $var: $.createdTime
+  updatedAt:
+    $var: $.updatedTime
+  parentId:
+    $var: $.parentDocumentId
+  canHaveChildren:
+    $var: $.canHaveChildren
+  resourceURI:
+    $var: $.uri
+  isDownloadable:
+    $var: $.isDownloadable
+importValue:
+  id:
+    $var: $.id
+  title:
+    $var: $.name
+  createdAt:
+    $var: $.client_modified
+  updatedAt:
+    $var: $.client_modified
+  parentId:
+    $var: $.folder_id
+  canHaveChildren:
+    $map:
+      value:
+        $var: $.file_type
+      mapping:
+        - from: file
+          to: false
+        - from: folder
+          to: true
+  resourceURI:
+    $var: $.link
+  canDownload:
+    $map:
+      value:
+        $var: $.file_type
+      mapping:
+        - from: file
+          to: true
+        - from: folder
+          to: false
+integration:
+  key: dropbox
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 685d5dbe2443759ffb2bd96c
+  name: Dropbox
+  uuid: bbe9f3a8-3639-43e1-a97a-f3fb0b76b081
+  connectorId: 643eac8bbadd839bce5b1114
+  hasMissingParameters: false
+  hasDocumentation: false
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/51e19372-446d-4be5-9e61-34153f957210
+  connectorVersion: 2.2.0
+  logoUri: https://static.integration.app/connectors/dropbox/logo.png
+  dataCollectionsCount: 1
+  operationsCount: 137
+  eventsCount: 0
+  authType: oauth2
+integrationKey: dropbox

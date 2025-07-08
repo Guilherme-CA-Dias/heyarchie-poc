@@ -1,0 +1,23 @@
+isCustomized: false
+key: download-content-item
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dc2fde096f269c294a5
+name: Download Content Item
+type: connector-operation
+inputSchema:
+  type: object
+  properties:
+    id:
+      type: string
+  required:
+    - id
+customOutputSchema:
+  type: object
+  properties:
+    downloadURI:
+      type: string
+    content:
+      type: string
+isDeployed: false

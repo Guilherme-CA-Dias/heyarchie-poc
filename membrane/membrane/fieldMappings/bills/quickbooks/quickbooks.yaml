@@ -1,0 +1,131 @@
+key: bills
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd58a934c7cd83b15aa15
+name: Bills
+customized: true
+universalFieldMappingId: 686bd58a934c7cd83b15aa09
+integrationId: 68641c5eab44ea46f8be9699
+dataSourceKey: bills
+direction: import
+defaultImportValue:
+  $var: $
+defaultExportValue:
+  $var: $
+exportValue:
+  DueDate:
+    $var: $.dueDate
+  CurrencyRef:
+    value:
+      $var: $.currency
+  Line:
+    $iterate:
+      source:
+        $var: $.lineItems
+      item:
+        Description:
+          $var: $.item.description
+        Amount:
+          $var: $.item.totalAmount
+        DetailType:
+          $var: $.item.type
+        AccountBasedExpenseLineDetail:
+          AccountRef:
+            value:
+              $case:
+                cases:
+                  - filter:
+                      $eval:
+                        $var: $.item.type
+                      is: AccountBasedExpenseLineDetail
+                    value:
+                      $var: $.item.ledgerAccountId
+  VendorRef:
+    value:
+      $var: $.supplierId
+  APAccountRef:
+    value:
+      $var: $.ledgerAccountId
+  TotalAmt:
+    $var: $.totalAmount
+  DocNumber:
+    $var: $.number
+  TxnTaxDetail:
+    TotalTax:
+      $var: $.totalTax
+  CustomerMemo:
+    value:
+      $var: $.memo
+importValue:
+  id:
+    $var: Id
+  number:
+    $var: $.DocNumber
+  supplierId:
+    $var: $.VendorRef.value
+  currency:
+    $var: $.CurrencyRef.value
+  lineItems:
+    $iterate:
+      source:
+        $var: $.Line
+      item:
+        id:
+          $var: $.item.Id
+        description:
+          $var: $.item.Description
+        type:
+          $var: $.item.DetailType
+        amount:
+          $var: $.item.Amount
+        ledgerAccountId:
+          $firstNotEmpty:
+            - $var: $.item.AccountBasedExpenseLineDetail.AccountRef.value
+  totalAmount:
+    $var: TotalAmt
+  balance:
+    $var: Balance
+  ledgerAccountId:
+    $var: $.APAccountRef.value
+  issueDate:
+    $var: $.TxnDate
+  dueDate:
+    $var: $.DueDate
+  createdTime:
+    $var: MetaData.CreateTime
+  updatedTime:
+    $var: MetaData.LastUpdatedTime
+  description:
+    $tpl:
+      template: '{1752000049846}- Bill - {1752000061044}'
+      values:
+        '1752000049846':
+          $var: $.DocNumber
+        '1752000061044':
+          $var: $.domain
+  classification: Bill
+integration:
+  key: quickbooks
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9699
+  name: Quickbooks
+  uuid: 7c32c4b9-ed25-4e00-ab19-f1c875c875f4
+  connectorId: 642b0c74c594903351a00870
+  hasMissingParameters: false
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/05de4b46-7030-4907-8508-b840098b4b83
+  connectorVersion: 1.1.13
+  logoUri: https://static.integration.app/connectors/quickbooks-connector/logo.png
+  dataCollectionsCount: 31
+  operationsCount: 86
+  eventsCount: 0
+  authType: oauth2
+integrationKey: quickbooks

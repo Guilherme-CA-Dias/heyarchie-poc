@@ -1,0 +1,92 @@
+key: receive-credit-note-events
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd5f567c93e291249d344
+name: Receive Credit Note Events
+nodes:
+  credit-note-created-trigger:
+    type: data-record-created-trigger
+    name: Credit Note Created Trigger
+    config:
+      dataSource:
+        key: credit-notes
+    links:
+      - key: get-all-credit-note-fields-by-id
+  credit-note-updated-trigger:
+    type: data-record-updated-trigger
+    name: Credit Note Updated Trigger
+    config:
+      dataSource:
+        key: credit-notes
+    links:
+      - key: get-all-credit-note-fields-by-id2
+  get-all-credit-note-fields-by-id:
+    type: find-data-record-by-id
+    name: Get all Credit Note fields by Id
+    config:
+      dataSource:
+        key: credit-notes
+      fieldMapping:
+        key: credit-notes
+        includeRawFields: true
+      id:
+        $var: $.input.credit-note-created-trigger.record.id
+    links:
+      - key: create-credit-note-in-my-app
+  get-all-credit-note-fields-by-id2:
+    type: find-data-record-by-id
+    name: Get all Credit Note fields by Id
+    config:
+      dataSource:
+        key: credit-notes
+      id:
+        $var: $.input.credit-note-updated-trigger.record.id
+      fieldMapping:
+        key: credit-notes
+        includeRawFields: true
+    links:
+      - key: update-credit-note-in-my-app
+  create-credit-note-in-my-app:
+    type: api-request-to-your-app
+    name: Create Credit Note in my App
+    config:
+      request:
+        body:
+          externalCredit NoteId:
+            $var: $.input.get-all-credit-note-fields-by-id.id
+          data:
+            $var: $.input.get-all-credit-note-fields-by-id
+    links: []
+  update-credit-note-in-my-app:
+    type: api-request-to-your-app
+    name: Update Credit Note in my App
+    config:
+      request:
+        body:
+          externalCredit NoteId:
+            $var: $.input.get-all-credit-note-fields-by-id2.id
+          data:
+            $var: $.input.get-all-credit-note-fields-by-id2
+    links: []
+  delete-credit-note-in-my-app:
+    type: api-request-to-your-app
+    name: Delete Credit Note from My App
+    config:
+      request:
+        body:
+          externalCredit NoteId:
+            $var: $.input.credit-note-deleted-trigger.record.id
+        method: POST
+    links: []
+  credit-note-deleted-trigger:
+    type: data-record-deleted-trigger
+    name: Credit Note Deleted Trigger
+    config:
+      dataSource:
+        key: credit-notes
+    links:
+      - key: delete-credit-note-in-my-app
+autoCreateInstances: false
+customized: false
+isDeployed: false

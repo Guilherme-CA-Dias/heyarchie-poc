@@ -1,0 +1,25 @@
+isCustomized: false
+parentId: 68641c60ab44ea46f8be96f2
+integrationId: 68641c5eab44ea46f8be9699
+key: get-journal-entries
+state: READY
+errors: []
+isDeactivated: false
+id: 68641c60ab44ea46f8be9702
+name: Get Journal Entries
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+config:
+  dataSource:
+    key: journal-entries
+  cursor:
+    $var: $.input.cursor
+  fieldMapping:
+    key: journal-entries
+    includeRawFields: true
+isDeployed: true
+integrationKey: quickbooks

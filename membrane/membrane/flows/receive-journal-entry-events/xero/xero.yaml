@@ -1,0 +1,140 @@
+key: receive-journal-entry-events
+state: READY
+errors: []
+isDeactivated: false
+id: 68641c60ab44ea46f8be976d
+name: Receive Journal Entry Events
+universalFlowId: 68641c60ab44ea46f8be9721
+integrationId: 68641c5eab44ea46f8be9697
+integration:
+  key: xero
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9697
+  name: Xero
+  uuid: e263dafc-5128-42e1-a608-74649861069a
+  connectorId: 642c613b986ed1caad98172b
+  hasMissingParameters: false
+  hasDocumentation: false
+  hasOperations: true
+  hasData: true
+  hasEvents: true
+  hasGlobalWebhooks: true
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/91877efa-787d-4858-80d8-3d46e99bb21b
+  connectorVersion: 1.1.4
+  logoUri: https://static.integration.app/connectors/xero-connector/logo.png
+  dataCollectionsCount: 17
+  operationsCount: 234
+  eventsCount: 1
+  authType: oauth2
+nodes:
+  journal-entry-created-trigger:
+    type: data-record-created-trigger
+    name: Journal Entry Created Trigger
+    config:
+      dataSource:
+        key: journal-entries
+      fieldMapping: {}
+    links:
+      - key: get-all-journal-entry-fields-by-id
+  journal-entry-updated-trigger:
+    type: data-record-updated-trigger
+    name: Journal Entry Updated Trigger
+    config:
+      dataSource:
+        key: journal-entries
+      fieldMapping: {}
+    links:
+      - key: get-all-journal-entry-fields-by-id2
+  get-all-journal-entry-fields-by-id:
+    type: find-data-record-by-id
+    name: Get all Journal Entry fields by Id
+    config:
+      dataSource:
+        key: journal-entries
+      fieldMapping:
+        key: journal-entries
+        includeRawFields: true
+      id:
+        $var: $.input.journal-entry-created-trigger.record.id
+    links:
+      - key: create-journal-entry-in-my-app
+  get-all-journal-entry-fields-by-id2:
+    type: find-data-record-by-id
+    name: Get all Journal Entry fields by Id
+    config:
+      dataSource:
+        key: journal-entries
+      id:
+        $var: $.input.journal-entry-updated-trigger.record.id
+      fieldMapping:
+        key: journal-entries
+        includeRawFields: true
+    links:
+      - key: update-journal-entry-in-my-app
+  create-journal-entry-in-my-app:
+    type: api-request-to-your-app
+    name: Create Journal Entry in my App
+    config:
+      request:
+        body:
+          externalJournal EntryId:
+            $var: $.input.get-all-journal-entry-fields-by-id.id
+          data:
+            $var: $.input.get-all-journal-entry-fields-by-id
+          integrationId:
+            $var: $.integration.key
+          integrationName:
+            $var: $.integration.name
+          connectionId:
+            $var: $.connection.id
+        uri: /webhooks/journal-entries
+        method: POST
+    links: []
+  update-journal-entry-in-my-app:
+    type: api-request-to-your-app
+    name: Update Journal Entry in my App
+    config:
+      request:
+        body:
+          externalJournal EntryId:
+            $var: $.input.get-all-journal-entry-fields-by-id2.id
+          data:
+            $var: $.input.get-all-journal-entry-fields-by-id2
+          integrationId:
+            $var: $.integration.key
+          integrationName:
+            $var: $.integration.name
+          connectionId:
+            $var: $.connection.id
+        uri: /webhooks/journal-entries
+        method: POST
+    links: []
+  delete-journal-entry-in-my-app:
+    type: api-request-to-your-app
+    name: Delete Journal Entry from My App
+    config:
+      request:
+        body:
+          externalJournal EntryId:
+            $var: $.input.journal-entry-deleted-trigger.record.id
+          connectionId:
+            $var: $.connection.id
+        method: DELETE
+        uri: /api/webhooks/journal-entries
+    links: []
+  journal-entry-deleted-trigger:
+    type: data-record-deleted-trigger
+    name: Journal Entry Deleted Trigger
+    config:
+      dataSource:
+        key: journal-entries
+      fieldMapping: {}
+    links:
+      - key: delete-journal-entry-in-my-app
+autoCreateInstances: false
+customized: false
+isDeployed: false
+integrationKey: xero

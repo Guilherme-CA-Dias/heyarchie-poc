@@ -1,0 +1,74 @@
+key: download-document
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dd7fde096f269c2983f
+name: Download Document
+integrationId: 685d5dbf84f467360cbe3255
+integration:
+  key: google-drive
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 685d5dbf84f467360cbe3255
+  name: Google Drive
+  uuid: f3cdfbb3-deb1-42b3-b708-6ca872deccf3
+  connectorId: 642e822e986ed1caad090f1d
+  hasMissingParameters: false
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/d1f5bf8e-f797-4dac-9905-69508b96be2c
+  connectorVersion: 2.5.0
+  logoUri: https://static.integration.app/connectors/gdrive/logo.png
+  dataCollectionsCount: 3
+  operationsCount: 51
+  eventsCount: 0
+  authType: oauth2
+nodes:
+  api-trigger:
+    type: api-trigger
+    name: API Trigger
+    config:
+      inputSchema:
+        type: object
+        properties:
+          documentId:
+            type: string
+    links:
+      - key: download-file-or-markdown
+  api-request-to-your-app:
+    type: api-request-to-your-app
+    name: API Request to Your App
+    config:
+      request:
+        uri: /api/webhooks/on-download-complete
+        method: POST
+        body:
+          documentId:
+            $var: $.input.api-trigger.documentId
+          text:
+            $var: $.input.download-file-or-markdown.content
+          connectionId:
+            $var: $.connection.id
+          downloadURI:
+            $var: $.input.download-file-or-markdown.downloadURI
+    links: []
+  download-file-or-markdown:
+    type: run-action
+    name: Download file or markdown
+    config:
+      action:
+        key: download-document-by-id
+      input:
+        id:
+          $var: $.input.api-trigger.documentId
+    links:
+      - key: api-request-to-your-app
+autoCreateInstances: false
+customized: false
+isDeployed: false
+integrationKey: google-drive

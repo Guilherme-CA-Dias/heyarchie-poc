@@ -1,0 +1,131 @@
+key: invoices
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd57c6102bed995a18c40
+name: Invoices
+customized: true
+universalFieldMappingId: 686bd57c6102bed995a18c2f
+integrationId: 68641c5eab44ea46f8be9697
+dataSourceKey: invoices
+direction: import
+defaultImportValue:
+  $var: $
+defaultExportValue:
+  $var: $
+exportValue:
+  Contact:
+    ContactID:
+      $var: $.customerId
+  LineItems:
+    $iterate:
+      source:
+        $var: $.lineItems
+      item:
+        Description:
+          $var: $.item.description
+        Quantity:
+          $var: $.item.quantity
+        ItemCode:
+          $var: $.item.code
+        AccountID:
+          $var: $.item.ledgerAccountId
+        TaxAmount:
+          $var: $.item.taxAmount
+        LineAmount:
+          $var: $.item.totalAmount
+  Date:
+    $var: $.issueDate
+  DueDate:
+    $var: $.dueDate
+  InvoiceNumber:
+    $var: $.number
+  CurrencyCode:
+    $var: $.currency
+  CurrencyRate:
+    $var: $.exchangeRate
+  Status:
+    $var: $.status
+  InvoiceID:
+    $var: $.id
+importValue:
+  id:
+    $var: $.InvoiceID
+  number:
+    $var: $.InvoiceNumber
+  status:
+    $var: $.Status
+  customerId:
+    $var: $.Contact.ContactID
+  currency:
+    $var: $.CurrencyCode
+  payments:
+    $iterate:
+      source:
+        $var: $.Payments
+      item:
+        $var: $.item.PaymentID
+  lineItemsIds:
+    $iterate:
+      source:
+        $var: $.LineItems
+      item:
+        $var: $.item.LineItemID
+  totalAmount:
+    $var: $.Total
+  totalTax:
+    $var: $.TotalTax
+  exchangeRate:
+    $var: $.CurrencyRate
+  dueDate:
+    $var: $.DueDate
+  issueDate:
+    $var: $.Date
+  totalDiscount:
+    $var: $.TotalDiscount
+  subTotal:
+    $var: $.SubTotal
+  lineItems:
+    $iterate:
+      source:
+        $var: $.LineItems
+      item:
+        id:
+          $var: $.item.LineItemID
+        description:
+          $var: $.item.Description
+        quantity:
+          $var: $.item.Quantity
+        code:
+          $var: $.item.ItemCode
+        ledgerAccountId:
+          $var: $.item.AccountID
+        taxAmount:
+          $var: $.item.TaxAmount
+        amount:
+          $var: $.item.LineAmount
+  classification: Invoice
+integration:
+  key: xero
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9697
+  name: Xero
+  uuid: e263dafc-5128-42e1-a608-74649861069a
+  connectorId: 642c613b986ed1caad98172b
+  hasMissingParameters: false
+  hasDocumentation: false
+  hasOperations: true
+  hasData: true
+  hasEvents: true
+  hasGlobalWebhooks: true
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/91877efa-787d-4858-80d8-3d46e99bb21b
+  connectorVersion: 1.1.4
+  logoUri: https://static.integration.app/connectors/xero-connector/logo.png
+  dataCollectionsCount: 17
+  operationsCount: 234
+  eventsCount: 1
+  authType: oauth2
+integrationKey: xero

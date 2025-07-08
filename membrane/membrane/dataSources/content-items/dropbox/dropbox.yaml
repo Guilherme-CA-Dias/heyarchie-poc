@@ -1,0 +1,36 @@
+key: content-items
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dc7a6578d747e67a5a3
+name: Content Items
+integrationId: 685d5dbe2443759ffb2bd96c
+customized: true
+universalDataSourceId: 685d5dc5b2f623353bd677e5
+collectionKey: files
+udm: documents
+defaultPath: /data/files
+integration:
+  key: dropbox
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 685d5dbe2443759ffb2bd96c
+  name: Dropbox
+  uuid: bbe9f3a8-3639-43e1-a97a-f3fb0b76b081
+  connectorId: 643eac8bbadd839bce5b1114
+  hasMissingParameters: false
+  hasDocumentation: false
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/51e19372-446d-4be5-9e61-34153f957210
+  connectorVersion: 2.2.0
+  logoUri: https://static.integration.app/connectors/dropbox/logo.png
+  dataCollectionsCount: 1
+  operationsCount: 137
+  eventsCount: 0
+  authType: oauth2
+integrationKey: dropbox

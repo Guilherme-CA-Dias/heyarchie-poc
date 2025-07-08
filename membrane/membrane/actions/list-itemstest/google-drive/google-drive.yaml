@@ -1,0 +1,26 @@
+isCustomized: false
+integrationId: 685d5dbf84f467360cbe3255
+key: list-itemstest
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dd09a06f557d06b9eb4
+name: list items(test)
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    parentId:
+      type: string
+    cursor:
+      type: string
+config:
+  dataSource:
+    collectionKey: items
+  filter:
+    parentId:
+      $var: $.input.parentId
+  cursor:
+    $var: $.input.cursor
+isDeployed: false
+integrationKey: google-drive

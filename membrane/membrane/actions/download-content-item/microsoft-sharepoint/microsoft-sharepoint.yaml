@@ -1,0 +1,33 @@
+isCustomized: true
+parentId: 685d5dc2fde096f269c294a5
+integrationId: 685d5dc07109c1a095699f52
+key: download-content-item
+state: CONFIGURATION_ERROR
+errors:
+  - message: Integration Dependency has error(s)
+    type: dependency_error
+    data:
+      workspaceElementReference:
+        type: integration
+        id: 685d5dc07109c1a095699f52
+isDeactivated: false
+id: 685d5dcc232b6306f25857c8
+name: Download Content Item
+type: connector-operation
+inputSchema:
+  type: object
+  properties:
+    id:
+      type: string
+  required:
+    - id
+config:
+  operationKey: download-file
+  input:
+    fileId:
+      $var: $.input.id
+outputMapping:
+  downloadURI:
+    $var: $.output.downloadUri
+isDeployed: false
+integrationKey: microsoft-sharepoint

@@ -1,0 +1,25 @@
+isCustomized: false
+parentId: 68644adf1cba9ea888b27f54
+integrationId: 68641c5eab44ea46f8be9697
+key: get-ledger-accounts
+state: READY
+errors: []
+isDeactivated: false
+id: 68644adf1cba9ea888b27f6d
+name: Get Ledger Accounts
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+config:
+  dataSource:
+    key: ledger-accounts
+  cursor:
+    $var: $.input.cursor
+  fieldMapping:
+    key: ledger-accounts
+    includeRawFields: true
+isDeployed: true
+integrationKey: xero

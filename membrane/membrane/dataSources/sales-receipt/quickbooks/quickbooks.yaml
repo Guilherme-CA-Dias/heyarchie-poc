@@ -1,0 +1,35 @@
+key: sales-receipt
+state: READY
+errors: []
+isDeactivated: false
+id: 686bdd637ce954f536eb196b
+name: Sales Receipt
+integrationId: 68641c5eab44ea46f8be9699
+customized: true
+universalDataSourceId: 686bdd33becebcf6822c9772
+collectionKey: sales-receipts
+defaultPath: /data/sales-receipts
+integration:
+  key: quickbooks
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9699
+  name: Quickbooks
+  uuid: 7c32c4b9-ed25-4e00-ab19-f1c875c875f4
+  connectorId: 642b0c74c594903351a00870
+  hasMissingParameters: false
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/05de4b46-7030-4907-8508-b840098b4b83
+  connectorVersion: 1.1.13
+  logoUri: https://static.integration.app/connectors/quickbooks-connector/logo.png
+  dataCollectionsCount: 31
+  operationsCount: 86
+  eventsCount: 0
+  authType: oauth2
+integrationKey: quickbooks

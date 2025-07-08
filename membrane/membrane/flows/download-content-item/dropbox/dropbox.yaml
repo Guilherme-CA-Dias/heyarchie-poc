@@ -1,0 +1,75 @@
+key: download-content-item
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dd31235674df4daa425
+name: Download Content Item
+universalFlowId: 685d5dc6f6434b150283c8ab
+integrationId: 685d5dbe2443759ffb2bd96c
+integration:
+  key: dropbox
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 685d5dbe2443759ffb2bd96c
+  name: Dropbox
+  uuid: bbe9f3a8-3639-43e1-a97a-f3fb0b76b081
+  connectorId: 643eac8bbadd839bce5b1114
+  hasMissingParameters: false
+  hasDocumentation: false
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/51e19372-446d-4be5-9e61-34153f957210
+  connectorVersion: 2.2.0
+  logoUri: https://static.integration.app/connectors/dropbox/logo.png
+  dataCollectionsCount: 1
+  operationsCount: 137
+  eventsCount: 0
+  authType: oauth2
+nodes:
+  api-trigger:
+    type: api-trigger
+    name: API Trigger
+    config:
+      inputSchema:
+        type: object
+        properties:
+          documentId:
+            type: string
+    links:
+      - key: download-file-or-markdown
+  api-request-to-your-app:
+    type: api-request-to-your-app
+    name: API Request to Your App
+    config:
+      request:
+        uri: /api/webhooks/on-download-complete
+        method: POST
+        body:
+          documentId:
+            $var: $.input.api-trigger.documentId
+          text:
+            $var: $.input.download-file-or-markdown.content
+          connectionId:
+            $var: $.connection.id
+          downloadURI:
+            $var: $.input.download-file-or-markdown.downloadURI
+    links: []
+  download-file-or-markdown:
+    type: run-action
+    name: Download file or markdown
+    config:
+      action:
+        key: download-content-item
+      input:
+        id:
+          $var: $.input.api-trigger.documentId
+    links:
+      - key: api-request-to-your-app
+autoCreateInstances: false
+customized: false
+isDeployed: false
+integrationKey: dropbox

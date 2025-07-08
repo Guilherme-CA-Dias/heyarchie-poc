@@ -1,0 +1,64 @@
+key: sales-receipt
+state: READY
+errors: []
+isDeactivated: false
+id: 686d21a6618f7303bfc13b86
+name: Sales Receipt
+customized: true
+universalFieldMappingId: 686d219b618f7303bfc13a2d
+integrationId: 68641c5eab44ea46f8be9699
+dataSourceKey: sales-receipt
+direction: import
+importValue:
+  account:
+    $var: $.ClassRef.name
+  totalAmount:
+    $var: $.TotalAmt
+  transactionDate:
+    $var: $.MetaData.CreateTime
+  lineItems:
+    $iterate:
+      source:
+        $var: $.Line
+      item:
+        description:
+          $var: $.item.Description
+        amount:
+          $var: $.item.Amount
+        id:
+          $var: $.item.Id
+        ledgerAccountId:
+          $firstNotEmpty:
+            - $var: $.item.SalesItemLineDetail.ItemAccountRef.value
+            - $var: $.item.DiscountLineDetail.DiscountAccountRef.value
+        type:
+          $var: $.item.DetailType
+  description:
+    $var: $.CustomerMemo.name
+  classification: Sales Receipt
+  id:
+    $var: $.Id
+integration:
+  key: quickbooks
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9699
+  name: Quickbooks
+  uuid: 7c32c4b9-ed25-4e00-ab19-f1c875c875f4
+  connectorId: 642b0c74c594903351a00870
+  hasMissingParameters: false
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/05de4b46-7030-4907-8508-b840098b4b83
+  connectorVersion: 1.1.13
+  logoUri: https://static.integration.app/connectors/quickbooks-connector/logo.png
+  dataCollectionsCount: 31
+  operationsCount: 86
+  eventsCount: 0
+  authType: oauth2
+integrationKey: quickbooks

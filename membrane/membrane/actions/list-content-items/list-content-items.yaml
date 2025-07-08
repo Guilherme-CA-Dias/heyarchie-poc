@@ -1,0 +1,16 @@
+isCustomized: false
+key: list-content-items
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dc27109c1a095699f80
+name: List Content Items
+type: run-javascript
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+    parentId:
+      type: string
+isDeployed: true

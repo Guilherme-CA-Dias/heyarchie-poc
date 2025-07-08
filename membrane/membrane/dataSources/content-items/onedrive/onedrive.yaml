@@ -1,0 +1,45 @@
+key: content-items
+state: CONFIGURATION_ERROR
+errors:
+  - message: Integration Dependency has error(s)
+    type: dependency_error
+    data:
+      workspaceElementReference:
+        type: integration
+        id: 685d5dc11235674df4daa202
+isDeactivated: false
+id: 685d5dc81120e413c751ac03
+name: Content Items
+integrationId: 685d5dc11235674df4daa202
+customized: true
+universalDataSourceId: 685d5dc5b2f623353bd677e5
+collectionKey: drive-items
+udm: documents
+defaultPath: /data/drive-items
+integration:
+  key: onedrive
+  state: CONFIGURATION_ERROR
+  errors:
+    - message: Integration is missing required parameters
+      type: configuration
+  isDeactivated: false
+  id: 685d5dc11235674df4daa202
+  name: MS OneDrive
+  uuid: a4762ff2-c287-4942-b00b-3f9790495b4c
+  connectorId: 652677b570089fac484d1a34
+  hasMissingParameters: true
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/7ccac466-e5bd-4506-8633-5dba059a659c
+  connectorVersion: 2.2.1
+  logoUri: >-
+    https://static.integration.app/connectors/onedrive/logo-8a1d93a1-ba8e-4127-93f5-ca45f899d879.png
+  dataCollectionsCount: 2
+  operationsCount: 2
+  eventsCount: 0
+  authType: oauth2
+integrationKey: onedrive

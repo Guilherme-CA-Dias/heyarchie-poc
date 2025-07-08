@@ -1,0 +1,45 @@
+key: content-items
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dc6fde096f269c29521
+name: Content Items
+customized: false
+dataSourceKey: content-items
+appSchema:
+  type: object
+  properties:
+    id:
+      type: string
+    title:
+      type: string
+    createdAt:
+      type: string
+    updatedAt:
+      type: string
+    parentId:
+      type: string
+    canHaveChildren:
+      type: boolean
+    resourceURI:
+      type: string
+    canDownload:
+      type: boolean
+direction: import
+defaultImportValue:
+  id:
+    $var: $.id
+  title:
+    $var: $.title
+  createdAt:
+    $var: $.createdTime
+  updatedAt:
+    $var: $.updatedTime
+  parentId:
+    $var: $.parentDocumentId
+  canHaveChildren:
+    $var: $.canHaveChildren
+  resourceURI:
+    $var: $.uri
+  isDownloadable:
+    $var: $.isDownloadable

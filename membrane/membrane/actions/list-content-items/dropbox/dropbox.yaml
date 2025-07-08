@@ -1,0 +1,28 @@
+isCustomized: true
+parentId: 685d5dc27109c1a095699f80
+integrationId: 685d5dbe2443759ffb2bd96c
+key: list-content-items
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dce8894879a21a0cf8f
+name: List Content Items
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+    parentId:
+      type: string
+config:
+  dataSource:
+    key: content-items
+  cursor:
+    $var: $.input.cursor
+  unifiedFilter:
+    ownerId: ''
+  fieldMapping:
+    key: content-items
+isDeployed: false
+integrationKey: dropbox

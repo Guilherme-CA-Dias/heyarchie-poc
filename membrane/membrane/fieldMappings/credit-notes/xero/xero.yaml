@@ -1,0 +1,135 @@
+key: credit-notes
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd5f567c93e291249d2f5
+name: Credit Notes
+customized: true
+universalFieldMappingId: 686bd5f567c93e291249d2e4
+integrationId: 68641c5eab44ea46f8be9697
+dataSourceKey: credit-notes
+direction: import
+defaultImportValue:
+  $var: $
+defaultExportValue:
+  $var: $
+exportValue:
+  Contact:
+    ContactID:
+      $var: $.customerId
+  Date:
+    $var: $.issueDate
+  Status:
+    $var: $.status
+  LineItems:
+    $iterate:
+      source:
+        $var: $.lineItems
+      item:
+        LineItemID:
+          $var: $.item.id
+        Description:
+          $var: $.item.description
+        Quantity:
+          $var: $.item.quantity
+        AccountID:
+          $var: $.item.ledgerAccountId
+        LineAmount:
+          $var: $.item.totalLineAmount
+  SubTotal:
+    $var: $.subTotal
+  TotalTax:
+    $var: $.totalTax
+  Total:
+    $var: $.totalAmount
+  CurrencyCode:
+    $var: $.currency
+  CreditNoteID:
+    $var: $.id
+  CreditNoteNumber:
+    $var: $.number
+  CurrencyRate:
+    $var: $.exchangeRate
+  Payments:
+    $iterate:
+      source:
+        $var: $.payments
+      item:
+        PaymentID:
+          $var: $.item
+  ID:
+    $var: $.id
+importValue:
+  id:
+    $var: $.CreditNoteID
+  number:
+    $var: $.CreditNoteNumber
+  currency:
+    $var: $.CurrencyCode
+  exchangeRate:
+    $var: $.CurrencyRate
+  lineItems:
+    $iterate:
+      source:
+        $var: $.LineItems
+      item:
+        id:
+          $var: $.item.LineItemID
+        description:
+          $var: $.item.Description
+        quantity:
+          $var: $.item.ItemCode
+        totalLineAmount:
+          $var: $.item.LineAmount
+        ledgerAccountId:
+          $var: $.item.AccountID
+  totalAmount:
+    $var: $.Total
+  totalTax:
+    $var: $.TotalTax
+  subTotal:
+    $var: $.SubTotal
+  issueDate:
+    $var: $.Date
+  payments:
+    $iterate:
+      source:
+        $var: $.Payments
+      item:
+        $var: $.item.PaymentID
+  customerId:
+    $var: $.Contact.ContactID
+  status:
+    $var: $.Status
+  description:
+    $var: $.Reference
+  ledgerAccountId:
+    $concat:
+      values:
+        $var: $.LineItems.AccountCode
+      delimiter: ' | '
+  classification: Credit Note
+integration:
+  key: xero
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9697
+  name: Xero
+  uuid: e263dafc-5128-42e1-a608-74649861069a
+  connectorId: 642c613b986ed1caad98172b
+  hasMissingParameters: false
+  hasDocumentation: false
+  hasOperations: true
+  hasData: true
+  hasEvents: true
+  hasGlobalWebhooks: true
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/91877efa-787d-4858-80d8-3d46e99bb21b
+  connectorVersion: 1.1.4
+  logoUri: https://static.integration.app/connectors/xero-connector/logo.png
+  dataCollectionsCount: 17
+  operationsCount: 234
+  eventsCount: 1
+  authType: oauth2
+integrationKey: xero

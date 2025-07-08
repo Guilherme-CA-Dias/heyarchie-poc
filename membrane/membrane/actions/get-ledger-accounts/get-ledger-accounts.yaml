@@ -1,0 +1,22 @@
+isCustomized: false
+key: get-ledger-accounts
+state: READY
+errors: []
+isDeactivated: false
+id: 68644adf1cba9ea888b27f54
+name: Get Ledger Accounts
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+config:
+  dataSource:
+    key: ledger-accounts
+  cursor:
+    $var: $.input.cursor
+  fieldMapping:
+    key: ledger-accounts
+    includeRawFields: true
+isDeployed: true

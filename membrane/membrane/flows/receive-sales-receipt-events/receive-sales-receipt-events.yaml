@@ -1,0 +1,71 @@
+key: receive-sales-receipt-events
+state: READY
+errors: []
+isDeactivated: false
+id: 686bdcf9becebcf6822c91fb
+name: Receive Sales Receipt events
+nodes:
+  data-record-created-trigger:
+    type: data-record-created-trigger
+    name: Data Record Created Trigger
+    config:
+      dataSource:
+        key: sales-receipt
+    links:
+      - key: find-data-record-by-id
+  data-record-updated-trigger:
+    type: data-record-updated-trigger
+    name: Data Record Updated Trigger
+    config:
+      dataSource:
+        key: sales-receipt
+      fieldMapping:
+        key: null
+    links:
+      - key: find-data-record-by-id-1
+  data-record-deleted-trigger:
+    type: data-record-deleted-trigger
+    name: Data Record Deleted Trigger
+    links:
+      - key: api-request-to-your-app
+  find-data-record-by-id:
+    type: find-data-record-by-id
+    name: Find Data Record By Id
+    config:
+      dataSource:
+        key: sales-receipt
+      fieldMapping:
+        key: sales-receipt
+        includeRawFields: true
+      id:
+        $var: $.input.data-record-created-trigger.record.id
+    links:
+      - key: api-request-to-your-app-1
+  find-data-record-by-id-1:
+    type: find-data-record-by-id
+    name: Find Data Record By Id
+    config:
+      dataSource:
+        key: sales-receipt
+      id:
+        $var: $.input.data-record-updated-trigger.record.id
+      fieldMapping:
+        key: sales-receipt
+        includeRawFields: true
+    links:
+      - key: api-request-to-your-app-2
+  api-request-to-your-app:
+    type: api-request-to-your-app
+    name: API Request to Your App
+    links: []
+  api-request-to-your-app-1:
+    type: api-request-to-your-app
+    name: API Request to Your App
+    links: []
+  api-request-to-your-app-2:
+    type: api-request-to-your-app
+    name: API Request to Your App
+    links: []
+autoCreateInstances: true
+customized: true
+isDeployed: true

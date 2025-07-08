@@ -1,0 +1,25 @@
+isCustomized: false
+parentId: 686bd5f567c93e291249d312
+integrationId: 68641c5eab44ea46f8be9699
+key: get-credit-notes
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd5f567c93e291249d32c
+name: Get Credit Notes
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+config:
+  dataSource:
+    key: credit-notes
+  cursor:
+    $var: $.input.cursor
+  fieldMapping:
+    key: credit-notes
+    includeRawFields: true
+isDeployed: true
+integrationKey: quickbooks

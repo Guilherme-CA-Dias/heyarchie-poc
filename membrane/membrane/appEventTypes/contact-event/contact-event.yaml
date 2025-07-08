@@ -1,0 +1,111 @@
+key: contact-event
+isDeactivated: false
+id: 685d5dc5b2f623353bd677a7
+name: Contact Event
+globalWebhookUri: >-
+  https://api.integration.app/webhooks/app-events/a144f908-89f8-4dfd-8756-9a7f15534f43
+schema:
+  type: object
+  properties:
+    type:
+      type: string
+      enum:
+        - created
+        - updated
+        - deleted
+    data:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+        websiteUrl:
+          type: string
+        phones:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+              type:
+                type: string
+        primaryPhone:
+          type: string
+        description:
+          type: string
+        currency:
+          type: string
+        industry:
+          type: string
+        ownerId:
+          type: string
+          referenceUdm: users
+        primaryAddress:
+          type: object
+          properties:
+            type:
+              type: string
+            full:
+              type: string
+            street:
+              type: string
+            city:
+              type: string
+            state:
+              type: string
+            country:
+              type: string
+            zip:
+              type: string
+        addresses:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              full:
+                type: string
+              street:
+                type: string
+              city:
+                type: string
+              state:
+                type: string
+              country:
+                type: string
+              zip:
+                type: string
+        numberOfEmployees:
+          type: number
+        createdTime:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          referenceUdm: users
+          readOnly: true
+        updatedTime:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedBy:
+          type: string
+          referenceUdm: users
+          readOnly: true
+        lastActivityTime:
+          type: string
+          format: date-time
+          readOnly: true
+    customerId:
+      type: string
+    internalContactId:
+      type: string
+    externalContactId:
+      type: string
+  title: Schema
+userIdFormula:
+  $var: $.customerId

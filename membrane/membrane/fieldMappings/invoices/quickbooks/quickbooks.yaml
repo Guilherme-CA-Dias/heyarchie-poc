@@ -1,0 +1,160 @@
+key: invoices
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd57c6102bed995a18c3e
+name: Invoices
+customized: true
+universalFieldMappingId: 686bd57c6102bed995a18c2f
+integrationId: 68641c5eab44ea46f8be9699
+dataSourceKey: invoices
+direction: import
+defaultImportValue:
+  $var: $
+defaultExportValue:
+  $var: $
+exportValue:
+  TotalAmt:
+    $var: $.totalAmount
+  Line:
+    $iterate:
+      source:
+        $var: $.lineItems
+      item:
+        Description:
+          $var: $.item.description
+        Amount:
+          $var: $.item.totalAmount
+        DetailType:
+          $var: $.item.type
+        SalesItemLineDetail:
+          Qty:
+            $case:
+              cases:
+                - filter:
+                    $eval:
+                      $var: $.item.type
+                    is: SalesItemLineDetail
+                  value:
+                    $var: $.item.quantity
+          UnitPrice:
+            $case:
+              cases:
+                - filter:
+                    $eval:
+                      $var: $.item.type
+                    is: SalesItemLineDetail
+                  value:
+                    $var: $.item.unitPrice
+          TaxAmount:
+            $case:
+              cases:
+                - filter:
+                    $eval:
+                      $var: $.item.type
+                    is: SalesItemLineDetail
+                  value:
+                    $var: $.item.taxAmount
+        GroupLineDetail:
+          Quantity:
+            $case:
+              cases:
+                - filter:
+                    $eval:
+                      $var: $.item.type
+                    is: GroupLine
+                  value:
+                    $var: $.item.quantity
+  DueDate:
+    $var: $.dueDate
+  DocNumber:
+    $var: $.number
+  CustomerMemo:
+    value:
+      $var: $.memo
+  Balance:
+    $var: $.balance
+  CustomerRef:
+    value:
+      $var: $.customerId
+  CurrencyRef:
+    value:
+      $var: $.currency
+  TxnTaxDetail:
+    TotalTax:
+      $var: $.totalTax
+importValue:
+  id:
+    $var: Id
+  number:
+    $var: DocNumber
+  memo:
+    $var: $.SalesTermRef.name
+  customerId:
+    $var: CustomerRef.value
+  currency:
+    $var: $.CurrencyRef.value
+  lineItems:
+    $iterate:
+      source:
+        $var: $.Line
+      item:
+        id:
+          $var: $.item.Id
+        description:
+          $var: $.item.Description
+        type:
+          $var: $.item.DetailType
+        amount:
+          $var: $.item.Amount
+        quantity:
+          $firstNotEmpty:
+            - $var: $.item.SalesItemLineDetail.Qty
+            - $var: $.item.GroupLineDetail.Quantity
+        unitPrice:
+          $firstNotEmpty:
+            - $var: $.item.SalesItemLineDetail.UnitPrice
+        taxAmount:
+          $firstNotEmpty:
+            - $var: $.item.SalesItemLineDetail.TaxAmount
+        ledgerAccountId:
+          $var: $.item.SalesItemLineDetail.ItemAccountRef.value
+  totalAmount:
+    $var: TotalAmt
+  totalTax:
+    $var: TxnTaxDetail.TotalTax
+  balance:
+    $var: Balance
+  issueDate:
+    $var: $.TxnDate
+  dueDate:
+    $var: DueDate
+  createdTime:
+    $var: MetaData.CreateTime
+  updatedTime:
+    $var: MetaData.LastUpdatedTime
+  classification: Invoice
+integration:
+  key: quickbooks
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9699
+  name: Quickbooks
+  uuid: 7c32c4b9-ed25-4e00-ab19-f1c875c875f4
+  connectorId: 642b0c74c594903351a00870
+  hasMissingParameters: false
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/05de4b46-7030-4907-8508-b840098b4b83
+  connectorVersion: 1.1.13
+  logoUri: https://static.integration.app/connectors/quickbooks-connector/logo.png
+  dataCollectionsCount: 31
+  operationsCount: 86
+  eventsCount: 0
+  authType: oauth2
+integrationKey: quickbooks

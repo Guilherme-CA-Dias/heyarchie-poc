@@ -1,0 +1,111 @@
+key: receive-journal-entry-events
+state: READY
+errors: []
+isDeactivated: false
+id: 68641c60ab44ea46f8be9721
+name: Receive Journal Entry Events
+nodes:
+  journal-entry-created-trigger:
+    type: data-record-created-trigger
+    name: Journal Entry Created Trigger
+    config:
+      dataSource:
+        key: journal-entries
+    links:
+      - key: get-all-journal-entry-fields-by-id
+  journal-entry-updated-trigger:
+    type: data-record-updated-trigger
+    name: Journal Entry Updated Trigger
+    config:
+      dataSource:
+        key: journal-entries
+    links:
+      - key: get-all-journal-entry-fields-by-id2
+  get-all-journal-entry-fields-by-id:
+    type: find-data-record-by-id
+    name: Get all Journal Entry fields by Id
+    config:
+      dataSource:
+        key: journal-entries
+      fieldMapping:
+        key: journal-entries
+        includeRawFields: true
+      id:
+        $var: $.input.journal-entry-created-trigger.record.id
+    links:
+      - key: create-journal-entry-in-my-app
+  get-all-journal-entry-fields-by-id2:
+    type: find-data-record-by-id
+    name: Get all Journal Entry fields by Id
+    config:
+      dataSource:
+        key: journal-entries
+      id:
+        $var: $.input.journal-entry-updated-trigger.record.id
+      fieldMapping:
+        key: journal-entries
+        includeRawFields: true
+    links:
+      - key: update-journal-entry-in-my-app
+  create-journal-entry-in-my-app:
+    type: api-request-to-your-app
+    name: Create Journal Entry in my App
+    config:
+      request:
+        body:
+          externalJournal EntryId:
+            $var: $.input.get-all-journal-entry-fields-by-id.id
+          data:
+            $var: $.input.get-all-journal-entry-fields-by-id
+          integrationId:
+            $var: $.integration.key
+          integrationName:
+            $var: $.integration.name
+          connectionId:
+            $var: $.connection.id
+        uri: /webhooks/journal-entries
+        method: POST
+    links: []
+  update-journal-entry-in-my-app:
+    type: api-request-to-your-app
+    name: Update Journal Entry in my App
+    config:
+      request:
+        body:
+          externalJournal EntryId:
+            $var: $.input.get-all-journal-entry-fields-by-id2.id
+          data:
+            $var: $.input.get-all-journal-entry-fields-by-id2
+          integrationId:
+            $var: $.integration.key
+          integrationName:
+            $var: $.integration.name
+          connectionId:
+            $var: $.connection.id
+        uri: /webhooks/journal-entries
+        method: POST
+    links: []
+  delete-journal-entry-in-my-app:
+    type: api-request-to-your-app
+    name: Delete Journal Entry from My App
+    config:
+      request:
+        body:
+          externalJournal EntryId:
+            $var: $.input.journal-entry-deleted-trigger.record.id
+          connectionId:
+            $var: $.connection.id
+        method: DELETE
+        uri: /api/webhooks/journal-entries
+    links: []
+  journal-entry-deleted-trigger:
+    type: data-record-deleted-trigger
+    name: Journal Entry Deleted Trigger
+    config:
+      dataSource:
+        key: journal-entries
+    links:
+      - key: delete-journal-entry-in-my-app
+autoCreateInstances: false
+customized: true
+isDeployed: false

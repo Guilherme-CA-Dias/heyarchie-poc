@@ -1,0 +1,125 @@
+key: content-items
+state: CONFIGURATION_ERROR
+errors:
+  - message: Integration Dependency has error(s)
+    type: dependency_error
+    data:
+      workspaceElementReference:
+        type: integration
+        id: 685d5dc07109c1a095699f52
+  - message: Data Source Dependency has error(s)
+    type: dependency_error
+    data:
+      workspaceElementReference:
+        type: data-source
+        id: 685d5dc8d25a030de8c98abd
+isDeactivated: false
+id: 685d5dcdb2f623353bd67952
+name: Content Items
+customized: true
+universalFieldMappingId: 685d5dc6fde096f269c29521
+integrationId: 685d5dc07109c1a095699f52
+dataSourceKey: content-items
+appSchema:
+  type: object
+  properties:
+    id:
+      type: string
+    title:
+      type: string
+    createdAt:
+      type: string
+    updatedAt:
+      type: string
+    parentId:
+      type: string
+    canHaveChildren:
+      type: boolean
+    resourceURI:
+      type: string
+    canDownload:
+      type: boolean
+direction: import
+defaultImportValue:
+  id:
+    $var: $.id
+  title:
+    $var: $.title
+  createdAt:
+    $var: $.createdTime
+  updatedAt:
+    $var: $.updatedTime
+  parentId:
+    $var: $.parentDocumentId
+  canHaveChildren:
+    $var: $.canHaveChildren
+  resourceURI:
+    $var: $.uri
+  isDownloadable:
+    $var: $.isDownloadable
+importValue:
+  id:
+    $var: $.globalId
+  title:
+    $var: $.name
+  createdAt:
+    $var: $.fileSystemInfo.createdDateTime
+  updatedAt:
+    $var: $.lastModifiedDateTime
+  parentId:
+    $var: $.globalFolderId
+  canHaveChildren:
+    $map:
+      value:
+        $var: $.itemType
+      mapping:
+        - from: site
+          to: true
+        - from: drive
+          to: true
+        - from: folder
+          to: true
+        - from: file
+          to: false
+  resourceURI:
+    $var: $.webUrl
+  canDownload:
+    $map:
+      value:
+        $var: $.itemType
+      mapping:
+        - from: file
+          to: true
+        - from: folder
+          to: false
+        - from: drive
+          to: false
+        - from: site
+          to: false
+integration:
+  key: microsoft-sharepoint
+  state: CONFIGURATION_ERROR
+  errors:
+    - message: Integration is missing required parameters
+      type: configuration
+  isDeactivated: false
+  id: 685d5dc07109c1a095699f52
+  name: Microsoft Sharepoint
+  uuid: a39683c1-8de0-43fa-87a8-8e1c03f3b9e1
+  connectorId: 6466784d60f981f3ce696906
+  hasMissingParameters: true
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/2b8ac8d1-af69-4d4b-98c3-d08dfb046f44
+  connectorVersion: 2.5.1
+  logoUri: >-
+    https://static.integration.app/connectors/microsoft-sharepoint/logo-0e34b7f3-b86a-43d8-9cb3-4d9dcf189876.png
+  dataCollectionsCount: 9
+  operationsCount: 2
+  eventsCount: 0
+  authType: oauth2
+integrationKey: microsoft-sharepoint

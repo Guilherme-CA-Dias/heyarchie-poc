@@ -1,0 +1,24 @@
+isCustomized: false
+parentId: 685d5dc284f467360cbe3307
+integrationId: 685d5dbe2443759ffb2bd96c
+key: find-content-item-by-id
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dcd7109c1a09569a089
+name: Find Content Item By Id
+type: find-data-record-by-id
+inputSchema:
+  type: object
+  properties:
+    id:
+      type: string
+config:
+  dataSource:
+    key: content-items
+  id:
+    $var: $.input.id
+  fieldMapping:
+    key: content-items
+isDeployed: false
+integrationKey: dropbox

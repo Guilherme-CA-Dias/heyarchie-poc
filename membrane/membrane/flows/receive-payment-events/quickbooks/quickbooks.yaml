@@ -1,0 +1,121 @@
+key: receive-payment-events
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd6bd592000cd394394ce
+name: Receive Payment Events
+universalFlowId: 686bd6bd592000cd3943946f
+integrationId: 68641c5eab44ea46f8be9699
+integration:
+  key: quickbooks
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9699
+  name: Quickbooks
+  uuid: 7c32c4b9-ed25-4e00-ab19-f1c875c875f4
+  connectorId: 642b0c74c594903351a00870
+  hasMissingParameters: false
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/05de4b46-7030-4907-8508-b840098b4b83
+  connectorVersion: 1.1.13
+  logoUri: https://static.integration.app/connectors/quickbooks-connector/logo.png
+  dataCollectionsCount: 31
+  operationsCount: 86
+  eventsCount: 0
+  authType: oauth2
+nodes:
+  payment-created-trigger:
+    type: data-record-created-trigger
+    name: Payment Created Trigger
+    config:
+      dataSource:
+        key: payments
+      fieldMapping: {}
+    links:
+      - key: get-all-payment-fields-by-id
+  payment-updated-trigger:
+    type: data-record-updated-trigger
+    name: Payment Updated Trigger
+    config:
+      dataSource:
+        key: payments
+      fieldMapping: {}
+    links:
+      - key: get-all-payment-fields-by-id2
+  get-all-payment-fields-by-id:
+    type: find-data-record-by-id
+    name: Get all Payment fields by Id
+    config:
+      dataSource:
+        key: payments
+      fieldMapping:
+        key: payments
+        includeRawFields: true
+      id:
+        $var: $.input.payment-created-trigger.record.id
+    links:
+      - key: create-payment-in-my-app
+  get-all-payment-fields-by-id2:
+    type: find-data-record-by-id
+    name: Get all Payment fields by Id
+    config:
+      dataSource:
+        key: payments
+      id:
+        $var: $.input.payment-updated-trigger.record.id
+      fieldMapping:
+        key: payments
+        includeRawFields: true
+    links:
+      - key: update-payment-in-my-app
+  create-payment-in-my-app:
+    type: api-request-to-your-app
+    name: Create Payment in my App
+    config:
+      request:
+        body:
+          externalPaymentId:
+            $var: $.input.get-all-payment-fields-by-id.id
+          data:
+            $var: $.input.get-all-payment-fields-by-id
+    links: []
+  update-payment-in-my-app:
+    type: api-request-to-your-app
+    name: Update Payment in my App
+    config:
+      request:
+        body:
+          externalPaymentId:
+            $var: $.input.get-all-payment-fields-by-id2.id
+          data:
+            $var: $.input.get-all-payment-fields-by-id2
+    links: []
+  delete-payment-in-my-app:
+    type: api-request-to-your-app
+    name: Delete Payment from My App
+    config:
+      request:
+        body:
+          externalPaymentId:
+            $var: $.input.payment-deleted-trigger.record.id
+        method: POST
+    links: []
+  payment-deleted-trigger:
+    type: data-record-deleted-trigger
+    name: Payment Deleted Trigger
+    config:
+      dataSource:
+        key: payments
+      fieldMapping: {}
+    links:
+      - key: delete-payment-in-my-app
+autoCreateInstances: false
+customized: false
+isDeployed: false
+integrationKey: quickbooks

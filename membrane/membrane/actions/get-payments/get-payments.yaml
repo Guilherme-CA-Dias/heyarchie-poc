@@ -1,0 +1,22 @@
+isCustomized: false
+key: get-payments
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd6bc592000cd3943944a
+name: Get Payments
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+config:
+  dataSource:
+    key: payments
+  cursor:
+    $var: $.input.cursor
+  fieldMapping:
+    key: payments
+    includeRawFields: true
+isDeployed: true

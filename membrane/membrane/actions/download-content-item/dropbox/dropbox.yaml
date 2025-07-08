@@ -1,0 +1,27 @@
+isCustomized: true
+parentId: 685d5dc2fde096f269c294a5
+integrationId: 685d5dbe2443759ffb2bd96c
+key: download-content-item
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dca40530a09e9b9a433
+name: Download Content Item
+type: connector-operation
+inputSchema:
+  type: object
+  properties:
+    id:
+      type: string
+  required:
+    - id
+config:
+  operationKey: download-file
+  input:
+    fileId:
+      $var: $.input.id
+outputMapping:
+  downloadURI:
+    $var: $.output.downloadUri
+isDeployed: false
+integrationKey: dropbox

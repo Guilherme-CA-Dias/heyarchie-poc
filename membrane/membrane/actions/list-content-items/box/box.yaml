@@ -1,0 +1,29 @@
+isCustomized: true
+parentId: 685d5dc27109c1a095699f80
+integrationId: 685d5dbdd25a030de8c988de
+key: list-content-items
+state: READY
+errors: []
+isDeactivated: false
+id: 685d5dce84f467360cbe3538
+name: List Content Items
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+    parentId:
+      type: string
+config:
+  dataSource:
+    key: content-items
+  cursor:
+    $var: $.input.cursor
+  filter:
+    folder_id:
+      $var: $.input.parentId
+  fieldMapping:
+    key: content-items
+isDeployed: true
+integrationKey: box

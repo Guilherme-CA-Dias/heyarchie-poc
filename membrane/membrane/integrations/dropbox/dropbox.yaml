@@ -1,0 +1,6 @@
+id: 685d5dbe2443759ffb2bd96c
+key: dropbox
+name: Dropbox
+connectorId: 643eac8bbadd839bce5b1114
+baseUri: s3://integration-app-connectors/public/51e19372-446d-4be5-9e61-34153f957210
+connectorVersion: 2.2.0

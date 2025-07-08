@@ -1,0 +1,13 @@
+key: payments
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd6bc592000cd39439416
+name: Payments
+customized: false
+dataSourceKey: payments
+direction: import
+defaultImportValue:
+  $var: $
+defaultExportValue:
+  $var: $

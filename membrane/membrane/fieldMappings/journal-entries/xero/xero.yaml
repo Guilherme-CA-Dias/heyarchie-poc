@@ -1,0 +1,125 @@
+key: journal-entries
+state: READY
+errors: []
+isDeactivated: false
+id: 68641c60ab44ea46f8be96dc
+name: Journal Entries
+customized: true
+universalFieldMappingId: 68641c60ab44ea46f8be96cb
+integrationId: 68641c5eab44ea46f8be9697
+dataSourceKey: journal-entries
+direction: import
+defaultImportValue:
+  $var: $
+defaultExportValue:
+  $var: $
+exportValue:
+  JournalID:
+    $var: $.id
+  JournalDate:
+    $var: $.transactionDate
+  JournalNumber:
+    $var: $.number
+  CreatedDateUTC:
+    $var: $.createdTime
+  JournalLines:
+    $iterate:
+      source:
+        $var: $.lineItems
+      item:
+        JournalLineID:
+          $var: $.item.id
+        AccountID:
+          $var: $.item.ledgerAccountId
+        AccountType:
+          $var: $.item.type
+        Description:
+          $var: $.item.description
+        LineAmount:
+          $var: $.item.amount
+  Narration:
+    $var: $.title
+importValue:
+  id:
+    $var: $.JournalID
+  number:
+    $var: $.JournalNumber
+  lineItems:
+    $iterate:
+      source:
+        $var: $.JournalLines
+      item:
+        id:
+          $var: $.item.JournalLineID
+        description:
+          $var: $.item.Description
+        type:
+          $var: $.item.AccountType
+        amount:
+          $var: $.item.LineAmount
+        ledgerAccountId:
+          $var: $.item.AccountID
+        dimension:
+          $var: $.item.AccountName
+  transactionDate:
+    $jsonata:
+      $tpl:
+        template: $fromMillis({10000000})
+        values:
+          '10000000':
+            $var: $.JournalDate
+  createdTime:
+    $jsonata:
+      $tpl:
+        template: $fromMillis({10000000})
+        values:
+          '10000000':
+            $var: $.CreatedDateUTC
+          '1751492977211':
+            $var: $.ShowOnCashBasisReports
+  description:
+    $var: $.Narration
+  ledgerAccountId:
+    $var: $.JournalLines[0].AccountID
+  memo:
+    $var: $.Narration
+  classification: Journal Entry
+  totalAmount:
+    $jsonata:
+      $tpl:
+        template: $sum({1752004300514})
+        values:
+          '1752004300514':
+            $iterate:
+              value:
+                $var: $.JournalLines
+              items:
+                $var: $item.NetAmount
+              source:
+                $var: $.JournalLines
+              item:
+                $var: $.item.NetAmount
+integration:
+  key: xero
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9697
+  name: Xero
+  uuid: e263dafc-5128-42e1-a608-74649861069a
+  connectorId: 642c613b986ed1caad98172b
+  hasMissingParameters: false
+  hasDocumentation: false
+  hasOperations: true
+  hasData: true
+  hasEvents: true
+  hasGlobalWebhooks: true
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/91877efa-787d-4858-80d8-3d46e99bb21b
+  connectorVersion: 1.1.4
+  logoUri: https://static.integration.app/connectors/xero-connector/logo.png
+  dataCollectionsCount: 17
+  operationsCount: 234
+  eventsCount: 1
+  authType: oauth2
+integrationKey: xero

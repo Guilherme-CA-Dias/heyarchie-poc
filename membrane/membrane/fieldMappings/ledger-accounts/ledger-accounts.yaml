@@ -1,0 +1,13 @@
+key: ledger-accounts
+state: READY
+errors: []
+isDeactivated: false
+id: 68644adf1cba9ea888b27f29
+name: Ledger Accounts
+customized: false
+dataSourceKey: ledger-accounts
+direction: import
+defaultImportValue:
+  $var: $
+defaultExportValue:
+  $var: $

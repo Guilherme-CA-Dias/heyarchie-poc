@@ -1,0 +1,143 @@
+key: credit-notes
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd5f567c93e291249d2f3
+name: Credit Notes
+customized: true
+universalFieldMappingId: 686bd5f567c93e291249d2e4
+integrationId: 68641c5eab44ea46f8be9699
+dataSourceKey: credit-notes
+direction: import
+defaultImportValue:
+  $var: $
+defaultExportValue:
+  $var: $
+exportValue:
+  Id:
+    $var: $.id
+  MetaData:
+    CreateTime:
+      $var: $.createdTime
+    LastUpdatedTime:
+      $var: $.updatedTime
+  DocNumber:
+    $var: $.number
+  TxnDate:
+    $var: $.issueDate
+  CurrencyRef:
+    value:
+      $var: $.currency
+  Line:
+    $iterate:
+      source:
+        $var: $.lineItems
+      item:
+        Id:
+          $var: $.item.id
+        LineNum:
+          $var: $.item.id
+        Description:
+          $var: $.item.description
+        Amount:
+          $var: $.item.totalLineAmount
+        DetailType: SalesItemLineDetail
+        SalesItemLineDetail:
+          ItemRef:
+            value:
+              $var: $.item.companyId
+          UnitPrice:
+            $var: $.item.unitPrice
+          Qty:
+            $var: $.item.quantity
+          TaxCodeRef:
+            value:
+              $var: $.item.taxRate
+  TxnTaxDetail:
+    TotalTax:
+      $var: $.totalTax
+  CustomerRef:
+    value:
+      $var: $.customerId
+  CustomerMemo:
+    value:
+      $var: $.memo
+  TotalAmt:
+    $var: $.totalAmount
+  Balance:
+    $var: $.balance
+importValue:
+  id:
+    $var: $.Id
+  number:
+    $var: $.DocNumber
+  memo:
+    $var: $.CustomerMemo.value
+  status:
+    $var: $.PrintStatus
+  currency:
+    $var: $.CurrencyRef.value
+  lineItems:
+    $iterate:
+      source:
+        $var: $.Line
+      item:
+        id:
+          $var: $.item.Id
+        itemName:
+          $var: $.item.SalesItemLineDetail.ItemRef.name
+        description:
+          $var: $.item.Description
+        quantity:
+          $var: $.item.SalesItemLineDetail.Qty
+        totalLineAmount:
+          $jsonata: $.item.Amount
+        companyId:
+          $var: $.item.SalesItemLineDetail.ItemRef.value
+        ledgerAccountId:
+          $var: $.item.SalesItemLineDetail.TaxCodeRef.value
+        unitPrice:
+          $var: $.item.SalesItemLineDetail.UnitPrice
+        taxRate:
+          $var: $.item.SalesItemLineDetail.TaxCodeRef.value
+  totalAmount:
+    $var: $.TotalAmt
+  totalTax:
+    $var: $.TxnTaxDetail.TotalTax
+  balance:
+    $var: $.Balance
+  issueDate:
+    $var: $.TxnDate
+  createdTime:
+    $var: $.MetaData.CreateTime
+  updatedTime:
+    $var: $.MetaData.LastUpdatedTime
+  customerId:
+    $var: $.CustomerRef.value
+  description:
+    $copy: memo
+  classification: Credit Note
+integration:
+  key: quickbooks
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9699
+  name: Quickbooks
+  uuid: 7c32c4b9-ed25-4e00-ab19-f1c875c875f4
+  connectorId: 642b0c74c594903351a00870
+  hasMissingParameters: false
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/05de4b46-7030-4907-8508-b840098b4b83
+  connectorVersion: 1.1.13
+  logoUri: https://static.integration.app/connectors/quickbooks-connector/logo.png
+  dataCollectionsCount: 31
+  operationsCount: 86
+  eventsCount: 0
+  authType: oauth2
+integrationKey: quickbooks

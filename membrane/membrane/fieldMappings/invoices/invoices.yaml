@@ -1,0 +1,13 @@
+key: invoices
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd57c6102bed995a18c2f
+name: Invoices
+customized: false
+dataSourceKey: invoices
+direction: import
+defaultImportValue:
+  $var: $
+defaultExportValue:
+  $var: $

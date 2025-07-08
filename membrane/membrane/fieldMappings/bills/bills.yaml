@@ -1,0 +1,13 @@
+key: bills
+state: READY
+errors: []
+isDeactivated: false
+id: 686bd58a934c7cd83b15aa09
+name: Bills
+customized: false
+dataSourceKey: bills
+direction: import
+defaultImportValue:
+  $var: $
+defaultExportValue:
+  $var: $

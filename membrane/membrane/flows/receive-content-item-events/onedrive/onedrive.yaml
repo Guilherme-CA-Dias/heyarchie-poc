@@ -1,0 +1,147 @@
+key: receive-content-item-events
+state: CONFIGURATION_ERROR
+errors:
+  - message: Integration Dependency has error(s)
+    type: dependency_error
+    data:
+      workspaceElementReference:
+        type: integration
+        id: 685d5dc11235674df4daa202
+  - message: Data Source Dependency has error(s)
+    type: dependency_error
+    data:
+      workspaceElementReference:
+        type: data-source
+        id: 685d5dc81120e413c751ac03
+  - message: Field Mapping Dependency has error(s)
+    type: dependency_error
+    data:
+      workspaceElementReference:
+        type: field-mapping
+        id: 685d5dce232b6306f2585809
+isDeactivated: false
+id: 685d5ddb9a06f557d06ba032
+name: Receive Content Item Events
+universalFlowId: 685d5dc640530a09e9b9a37c
+integrationId: 685d5dc11235674df4daa202
+integration:
+  key: onedrive
+  state: CONFIGURATION_ERROR
+  errors:
+    - message: Integration is missing required parameters
+      type: configuration
+  isDeactivated: false
+  id: 685d5dc11235674df4daa202
+  name: MS OneDrive
+  uuid: a4762ff2-c287-4942-b00b-3f9790495b4c
+  connectorId: 652677b570089fac484d1a34
+  hasMissingParameters: true
+  hasDocumentation: true
+  hasOperations: true
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/7ccac466-e5bd-4506-8633-5dba059a659c
+  connectorVersion: 2.2.1
+  logoUri: >-
+    https://static.integration.app/connectors/onedrive/logo-8a1d93a1-ba8e-4127-93f5-ca45f899d879.png
+  dataCollectionsCount: 2
+  operationsCount: 2
+  eventsCount: 0
+  authType: oauth2
+nodes:
+  find-record-by-id:
+    type: find-data-record-by-id
+    name: Find record-by-id
+    config:
+      dataSource:
+        key: content-items
+      id:
+        $var: $.input.content-item-created-trigger.record.id
+      fieldMapping:
+        key: content-items
+    links:
+      - key: send-created-event-to-my-app
+  find-data-record-by-id:
+    type: find-data-record-by-id
+    name: Find Data Record By Id
+    config:
+      dataSource:
+        key: content-items
+      id:
+        $var: $.input.content-item-updated-trigger.record.id
+      fieldMapping:
+        key: content-items
+    links:
+      - key: send-updated-request-to-your-app
+  send-created-event-to-my-app:
+    type: api-request-to-your-app
+    name: Send created Event to My App
+    config:
+      request:
+        uri: /api/webhooks/on-create
+        method: POST
+        body:
+          fields:
+            $var: $.input.find-record-by-id.fields
+          connectionId:
+            $var: $.connection.id
+    links: []
+  send-deleted-event-to-my-app:
+    type: api-request-to-your-app
+    name: Send deleted event to My App
+    config:
+      request:
+        method: POST
+        body:
+          id:
+            $var: $.input.content-item-deleted-trigger.record.id
+        uri: /api/webhooks/on-delete
+    links: []
+  send-updated-request-to-your-app:
+    type: api-request-to-your-app
+    name: Send Updated request to your app
+    config:
+      request:
+        uri: /api/webhooks/on-update
+        method: POST
+        body:
+          connectionId:
+            $var: $.connection.id
+          fields:
+            $var: $.input.find-data-record-by-id.fields
+    links: []
+  content-item-created-trigger:
+    type: data-record-created-trigger
+    name: Content Item Created Trigger
+    config:
+      dataSource:
+        key: content-items
+      fieldMapping:
+        key: content-items
+    links:
+      - key: find-record-by-id
+  content-item-deleted-trigger:
+    type: data-record-deleted-trigger
+    name: Content Item Deleted Trigger
+    config:
+      dataSource:
+        key: content-items
+      fieldMapping: {}
+    links:
+      - key: send-deleted-event-to-my-app
+  content-item-updated-trigger:
+    type: data-record-updated-trigger
+    name: Content Item Updated Trigger
+    config:
+      dataSource:
+        key: content-items
+      fieldMapping:
+        key: content-items
+    links:
+      - key: find-data-record-by-id
+autoCreateInstances: true
+customized: false
+isDeployed: false
+integrationKey: onedrive
