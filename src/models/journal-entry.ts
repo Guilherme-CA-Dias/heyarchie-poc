@@ -1,6 +1,7 @@
 import { Schema, model, models } from "mongoose";
+import { TRANSACTION_CLASSIFICATIONS } from "@/lib/constants";
 
-export interface JournalEntryLineItem {
+export interface TransactionLineItem {
   id: string;
   description?: string;
   amount: number;
@@ -14,14 +15,14 @@ export interface JournalEntryLineItem {
   };
 }
 
-export interface JournalEntry {
+export interface Transaction {
   _id: string;
   id: string;
   number?: string;
   memo?: string;
   currency: string;
   ledgerAccountId?: string;
-  lineItems: JournalEntryLineItem[];
+  lineItems: TransactionLineItem[];
   transactionDate: string;
   createdTime: string;
   updatedTime: string;
@@ -30,10 +31,12 @@ export interface JournalEntry {
   integrationName: string;
   userId: string;
   importedAt: string;
+  classification?: string; // Type of transaction - comes directly from API
+  totalAmount?: number; // Total amount from API
   rawFields?: any; // Store the complete raw response for reference
 }
 
-const journalEntryLineItemSchema = new Schema<JournalEntryLineItem>({
+const transactionLineItemSchema = new Schema<TransactionLineItem>({
   id: String,
   description: String,
   amount: Number,
@@ -47,13 +50,13 @@ const journalEntryLineItemSchema = new Schema<JournalEntryLineItem>({
   },
 });
 
-const journalEntrySchema = new Schema<JournalEntry>({
+const transactionSchema = new Schema<Transaction>({
   id: String,
   number: String,
   memo: String,
   currency: String,
   ledgerAccountId: String,
-  lineItems: [journalEntryLineItemSchema],
+  lineItems: [transactionLineItemSchema],
   transactionDate: String,
   createdTime: String,
   updatedTime: String,
@@ -65,6 +68,15 @@ const journalEntrySchema = new Schema<JournalEntry>({
     type: String,
     default: () => new Date().toISOString(),
   },
+  classification: {
+    type: String,
+    enum: TRANSACTION_CLASSIFICATIONS,
+    required: false, // Optional since it comes from API
+  },
+  totalAmount: {
+    type: Number,
+    required: false, // Optional since it comes from API
+  },
   rawFields: {
     type: Schema.Types.Mixed,
     default: null,
@@ -72,15 +84,23 @@ const journalEntrySchema = new Schema<JournalEntry>({
 });
 
 // Create compound unique index on business key (id + connectionId to handle same IDs across integrations)
-journalEntrySchema.index({ id: 1, connectionId: 1 }, { unique: true });
+transactionSchema.index({ id: 1, connectionId: 1 }, { unique: true });
 
 // Create indexes for efficient querying
-journalEntrySchema.index({ userId: 1, integrationId: 1 });
-journalEntrySchema.index({ transactionDate: 1 });
-journalEntrySchema.index({ importedAt: 1 });
+transactionSchema.index({ userId: 1, integrationId: 1 });
+transactionSchema.index({ integrationId: 1, classification: 1 });
+transactionSchema.index({ transactionDate: -1 });
+transactionSchema.index({ createdTime: -1 });
+transactionSchema.index({ classification: 1 });
 
+// For backward compatibility, keep the old model name but use new schema
 if (models.JournalEntry) {
   delete models.JournalEntry;
 }
 
-export const JournalEntryModel = model<JournalEntry>("JournalEntry", journalEntrySchema); 
+export const TransactionModel = model<Transaction>("JournalEntry", transactionSchema);
+
+// Export the old interface names for backward compatibility
+export type JournalEntry = Transaction;
+export type JournalEntryLineItem = TransactionLineItem;
+export const JournalEntryModel = TransactionModel; 

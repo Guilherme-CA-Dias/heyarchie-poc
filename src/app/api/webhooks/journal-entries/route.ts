@@ -1,34 +1,35 @@
-// src/app/api/webhooks/journal-entries/route.ts
+// Pending - This whole route needs to be changes to api/webhooks/general-ledger/route.ts
 
 import { verifyIntegrationAppToken } from "@/lib/integration-app-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { JournalEntryModel } from "@/models/journal-entry";
+import { TransactionModel } from "@/models/journal-entry";
 import connectDB from "@/lib/mongodb";
 import { z } from "zod";
 
-const journalEntryWebhookSchema = z.object({
+const transactionWebhookSchema = z.object({
   connectionId: z.string(),
   fields: z.object({
     id: z.string().min(1),
-    externalJournalEntryId: z.string().optional(),
+    externalTransactionId: z.string().optional(),
     data: z.record(z.any()),
     integrationId: z.string().optional(),
     integrationName: z.string().optional(),
+    classification: z.string().optional(),
   }),
 });
 
-const journalEntryDeleteSchema = z.object({
+const transactionDeleteSchema = z.object({
   connectionId: z.string(),
-  externalJournalEntryId: z.string(),
+  externalTransactionId: z.string(),
 });
 
 /**
- * This webhook is triggered when a journal entry is created or updated on external accounting systems
+ * This webhook is triggered when a transaction is created or updated on external accounting systems
  */
 export async function POST(request: NextRequest) {
   const body = await request.json();
 
-  console.log("Journal Entry Webhook Body:", body);
+  console.log("Transaction Webhook Body:", body);
 
   const verificationResult = await verifyIntegrationAppToken(request);
 
@@ -40,10 +41,10 @@ export async function POST(request: NextRequest) {
 
   console.log("Extracted user ID from token:", userId);
 
-  const payload = journalEntryWebhookSchema.safeParse(body);
+  const payload = transactionWebhookSchema.safeParse(body);
 
   if (!payload.success) {
-    console.error("Invalid journal entry webhook payload:", payload.error);
+    console.error("Invalid transaction webhook payload:", payload.error);
     return NextResponse.json(
       { error: "Invalid webhook payload" },
       { status: 400 }
@@ -63,21 +64,25 @@ export async function POST(request: NextRequest) {
   try {
     await connectDB();
 
-    // Extract the external journal entry ID and data
-    const externalJournalEntryId = fields.externalJournalEntryId || fields.id;
+    // Extract the external transaction ID and data
+    const externalTransactionId = fields.externalTransactionId || fields.id;
     const data = fields.data || fields;
     const integrationId = fields.integrationId;
     const integrationName = fields.integrationName;
+    // Don't override classification - let it come from the API as-is
+    const classification = fields.classification;
 
-    console.log(`Processing journal entry webhook for ${externalJournalEntryId} from ${integrationName}`);
+    console.log(`Processing transaction webhook for ${externalTransactionId} from ${integrationName} (${classification})`);
 
-    // Prepare the journal entry data
-    const journalEntryData = {
+    // Prepare the transaction data
+    const transactionData = {
       ...data,
-      id: externalJournalEntryId,
+      id: externalTransactionId,
       integrationId,
       integrationName,
       connectionId,
+      // Only add classification if it exists in the original data
+      ...(classification && { classification }),
       userId: userId || 'unknown', // Use 'unknown' as fallback if no user ID
       updatedAt: new Date().toISOString(),
       // Preserve existing fields if they exist
@@ -86,20 +91,20 @@ export async function POST(request: NextRequest) {
     };
 
     // Try to find existing entry by external ID and connection
-    const existingEntry = await JournalEntryModel.findOne({
-      id: externalJournalEntryId,
+    const existingEntry = await TransactionModel.findOne({
+      id: externalTransactionId,
       connectionId: connectionId,
     });
 
     if (existingEntry) {
       // Update existing entry
-      const updatedEntry = await JournalEntryModel.findOneAndUpdate(
+      const updatedEntry = await TransactionModel.findOneAndUpdate(
         {
-          id: externalJournalEntryId,
+          id: externalTransactionId,
           connectionId: connectionId,
         },
         {
-          $set: journalEntryData,
+          $set: transactionData,
         },
         {
           new: true,
@@ -108,38 +113,40 @@ export async function POST(request: NextRequest) {
       );
 
       if (!updatedEntry) {
-        throw new Error("Failed to update journal entry");
+        throw new Error("Failed to update transaction");
       }
 
-      console.log(`Updated journal entry ${externalJournalEntryId} from ${integrationName}`);
+      console.log(`Updated transaction ${externalTransactionId} from ${integrationName} (${classification})`);
       
       return NextResponse.json({
         success: true,
         action: "updated",
-        journalEntryId: updatedEntry._id,
-        externalJournalEntryId,
+        transactionId: updatedEntry._id,
+        externalTransactionId,
         integrationName,
+        classification,
         userId: userId || 'unknown',
       });
     } else {
       // Create new entry
-      const newEntry = new JournalEntryModel(journalEntryData);
+      const newEntry = new TransactionModel(transactionData);
       await newEntry.save();
 
-      console.log(`Created new journal entry ${externalJournalEntryId} from ${integrationName}`);
+      console.log(`Created new transaction ${externalTransactionId} from ${integrationName} (${classification})`);
       
       return NextResponse.json({
         success: true,
         action: "created",
-        journalEntryId: newEntry._id,
-        externalJournalEntryId,
+        transactionId: newEntry._id,
+        externalTransactionId,
         integrationName,
+        classification,
         userId: userId || 'unknown',
       });
     }
 
   } catch (error) {
-    console.error("Error processing journal entry webhook:", error);
+    console.error("Error processing transaction webhook:", error);
     return NextResponse.json(
       { 
         error: "Failed to process webhook",
@@ -151,21 +158,21 @@ export async function POST(request: NextRequest) {
 }
 
 // Optional: Add GET endpoint for webhook verification
-export async function GET(request: NextRequest) {
+export async function GET() {
   return NextResponse.json({
-    status: "journal entries webhook endpoint active",
-    message: "POST requests with journal entry data are accepted, DELETE requests for deletion",
+    status: "transactions webhook endpoint active",
+    message: "POST requests with transaction data are accepted, DELETE requests for deletion",
     timestamp: new Date().toISOString(),
   });
 }
 
 /**
- * Handle DELETE requests to remove journal entries
+ * Handle DELETE requests to remove transactions
  */
 export async function DELETE(request: NextRequest) {
   const body = await request.json();
 
-  console.log("Journal Entry Delete Webhook Body:", body);
+  console.log("Transaction Delete Webhook Body:", body);
 
   const verificationResult = await verifyIntegrationAppToken(request);
 
@@ -177,17 +184,17 @@ export async function DELETE(request: NextRequest) {
 
   console.log("Extracted user ID from token:", userId);
 
-  const deletePayload = journalEntryDeleteSchema.safeParse(body);
+  const deletePayload = transactionDeleteSchema.safeParse(body);
 
   if (!deletePayload.success) {
-    console.error("Invalid journal entry delete webhook payload:", deletePayload.error);
+    console.error("Invalid transaction delete webhook payload:", deletePayload.error);
     return NextResponse.json(
       { error: "Invalid webhook payload" },
       { status: 400 }
     );
   }
 
-  const { connectionId, externalJournalEntryId } = deletePayload.data;
+  const { connectionId, externalTransactionId } = deletePayload.data;
 
   console.log("Processing delete webhook for connection:", connectionId);
 
@@ -198,37 +205,37 @@ export async function DELETE(request: NextRequest) {
   try {
     await connectDB();
 
-    console.log(`Processing delete webhook for journal entry ${externalJournalEntryId}`);
+    console.log(`Processing delete webhook for transaction ${externalTransactionId}`);
 
-    // Find and delete the journal entry
-    const deletedEntry = await JournalEntryModel.findOneAndDelete({
-      id: externalJournalEntryId,
+    // Find and delete the transaction
+    const deletedEntry = await TransactionModel.findOneAndDelete({
+      id: externalTransactionId,
       connectionId: connectionId,
     });
 
     if (!deletedEntry) {
-      console.log(`Journal entry ${externalJournalEntryId} not found for deletion`);
+      console.log(`Transaction ${externalTransactionId} not found for deletion`);
       return NextResponse.json({
         success: true,
         action: "not_found",
-        message: "Journal entry not found for deletion",
-        externalJournalEntryId,
+        message: "Transaction not found for deletion",
+        externalTransactionId,
         userId: userId || 'unknown',
       });
     }
 
-    console.log(`Deleted journal entry ${externalJournalEntryId}`);
+    console.log(`Deleted transaction ${externalTransactionId}`);
     
     return NextResponse.json({
       success: true,
       action: "deleted",
-      journalEntryId: deletedEntry._id,
-      externalJournalEntryId,
+      transactionId: deletedEntry._id,
+      externalTransactionId,
       userId: userId || 'unknown',
     });
 
   } catch (error) {
-    console.error("Error processing journal entry delete webhook:", error);
+    console.error("Error processing transaction delete webhook:", error);
     return NextResponse.json(
       { 
         error: "Failed to process delete webhook",

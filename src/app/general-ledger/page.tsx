@@ -8,10 +8,10 @@ import { Loader2, Download, AlertCircle, CheckCircle, BookOpen } from "lucide-re
 import { useAuth } from "@/app/auth-provider";
 import { useIntegrationApp, useIntegrations } from "@integration-app/react";
 import { toast } from "sonner";
-import { ACCOUNTING_INTEGRATIONS } from "@/lib/constants";
+import { ACCOUNTING_INTEGRATIONS, TRANSACTION_TYPES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-interface JournalEntryLineItem {
+interface TransactionLineItem {
   id: string;
   description?: string;
   amount: number;
@@ -25,16 +25,29 @@ interface JournalEntryLineItem {
   };
 }
 
-interface JournalEntry {
+interface Transaction {
   id: string;
   number?: string;
   memo?: string;
   currency: string;
   ledgerAccountId?: string;
-  lineItems: JournalEntryLineItem[];
+  lineItems: TransactionLineItem[];
   transactionDate: string;
   createdTime: string;
   updatedTime: string;
+  integrationId?: string;
+  integrationName?: string;
+  connectionId?: string;
+  classification: string; // Type of transaction
+  totalAmount?: number; // Total amount from API
+  rawFields?: any;
+}
+
+interface LedgerAccount {
+  id: string;
+  name: string;
+  type: string;
+  classification?: string;
   integrationId?: string;
   integrationName?: string;
   connectionId?: string;
@@ -49,24 +62,6 @@ interface ImportResult {
   error?: string;
 }
 
-interface LedgerAccount {
-  id: string;
-  name: string;
-  type: string;
-  status: string;
-  currentBalance: number;
-  currency: string;
-  createdTime: string;
-  updatedTime: string;
-  classification: string;
-  connectionId: string;
-  integrationId: string;
-  integrationName: string;
-  userId: string;
-  importedAt: string;
-  rawFields?: any;
-}
-
 export default function GeneralLedgerPage() {
   const { customerId, customerName } = useAuth();
   const integrationApp = useIntegrationApp();
@@ -74,7 +69,7 @@ export default function GeneralLedgerPage() {
   const [isImporting, setIsImporting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [importResults, setImportResults] = useState<ImportResult[]>([]);
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [ledgerAccountSearchTerm, setLedgerAccountSearchTerm] = useState("");
   const [hasMore, setHasMore] = useState(true);
@@ -92,8 +87,9 @@ export default function GeneralLedgerPage() {
   const [selectedLedgerAccountId, setSelectedLedgerAccountId] = useState<string | null>(null);
   const [activeLedgerAccountTab, setActiveLedgerAccountTab] = useState<string>("all");
   const [ledgerAccountCounts, setLedgerAccountCounts] = useState<{[key: string]: {count: number, name: string}}>({});
+  const [availableLedgerAccountIntegrations, setAvailableLedgerAccountIntegrations] = useState<string[]>([]);
 
-  // Load existing journal entries and ledger accounts from MongoDB on page load
+  // Load existing transactions and ledger accounts from MongoDB on page load
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -117,14 +113,16 @@ export default function GeneralLedgerPage() {
           setAvailableIntegrations(countsData.counts.map((item: any) => item.integrationId));
         }
         
-        // Fetch first page of entries
+        // Fetch first page of transactions
         const response = await fetch(`/api/journal-entries?limit=${pageSize}&offset=0`);
         if (response.ok) {
           const data = await response.json();
-          setJournalEntries(data.journalEntries || []);
-          setHasMore(data.journalEntries.length === pageSize);
+          const transactions = data.transactions || [];
+          setTransactions(transactions);
+          // Set hasMore based on whether we got a full page of results
+          setHasMore(transactions.length === pageSize);
         } else {
-          console.error('Failed to load journal entries');
+          console.error('Failed to load transactions');
         }
 
         // Load ledger accounts
@@ -144,14 +142,12 @@ export default function GeneralLedgerPage() {
     if (searchTerm) {
       // When searching, we show all filtered results without pagination
       setHasMore(false);
-    } else if (activeTab === "all") {
-      // When search is cleared and on "All" tab, reset to paginated view
-      setHasMore(journalEntries.length === pageSize);
-    } else {
+    } else if (activeTab !== "all") {
       // When on a specific integration tab, no pagination
       setHasMore(false);
     }
-  }, [searchTerm, activeTab, journalEntries.length]);
+    // Note: hasMore is managed by loadMoreEntries and initial load, not here
+  }, [searchTerm, activeTab]);
 
   // Intersection observer for infinite scrolling
   const lastEntryElementRef = useCallback((node: HTMLDivElement | null) => {
@@ -168,7 +164,7 @@ export default function GeneralLedgerPage() {
     if (node) observerRef.current.observe(node);
   }, [isLoadingMore, hasMore, searchTerm, activeTab]);
 
-  // Load more journal entries
+  // Load more transactions
   const loadMoreEntries = async () => {
     if (isLoadingMore || !hasMore) return;
     
@@ -180,23 +176,23 @@ export default function GeneralLedgerPage() {
       const response = await fetch(`/api/journal-entries?limit=${pageSize}&offset=${offset}`);
       if (response.ok) {
         const data = await response.json();
-        const newEntries = data.journalEntries || [];
+        const newTransactions = data.transactions || [];
         
-        setJournalEntries(prev => [...prev, ...newEntries]);
+        setTransactions(prev => [...prev, ...newTransactions]);
         setCurrentPage(nextPage);
-        setHasMore(newEntries.length === pageSize);
+        setHasMore(newTransactions.length === pageSize);
       } else {
-        console.error('Failed to load more journal entries');
+        console.error('Failed to load more transactions');
       }
     } catch (error) {
-      console.error('Error loading more journal entries:', error);
+      console.error('Error loading more transactions:', error);
     } finally {
       setIsLoadingMore(false);
     }
   };
 
-  // Save journal entries to MongoDB
-  const saveJournalEntries = async (entries: JournalEntry[], connectionId: string, integrationId: string, integrationName: string) => {
+  // Save transactions to MongoDB
+  const saveTransactions = async (transactions: Transaction[], connectionId: string, integrationId: string, integrationName: string) => {
     try {
       const response = await fetch('/api/journal-entries', {
         method: 'POST',
@@ -204,7 +200,7 @@ export default function GeneralLedgerPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          journalEntries: entries,
+          transactions,
           connectionId,
           integrationId,
           integrationName,
@@ -212,21 +208,21 @@ export default function GeneralLedgerPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save journal entries');
+        throw new Error('Failed to save transactions');
       }
 
       const result = await response.json();
-      console.log('Saved journal entries:', result);
+      console.log('Saved transactions:', result);
       return result;
     } catch (error) {
-      console.error('Error saving journal entries:', error);
+      console.error('Error saving transactions:', error);
       throw error;
     }
   };
 
-  const handleImportJournalEntries = async () => {
+  const handleImportTransactions = async () => {
     if (!customerId) {
-      toast.error("Please log in to import journal entries");
+      toast.error("Please log in to import transactions");
       return;
     }
 
@@ -236,19 +232,22 @@ export default function GeneralLedgerPage() {
     try {
       const results: ImportResult[] = [];
 
-      // Filter for integrations that support journal entries
-      const journalEntryIntegrations = integrations.filter((integration: any) => 
+      // Filter for integrations that support accounting transactions
+      const accountingIntegrations = integrations.filter((integration: any) => 
         ACCOUNTING_INTEGRATIONS.includes(integration.key as any) && integration.connection
       );
 
-      if (journalEntryIntegrations.length === 0) {
+      if (accountingIntegrations.length === 0) {
         toast.error("No accounting integrations found. Please connect an accounting integration first.");
         setIsImporting(false);
         return;
       }
 
+      // Use transaction types from constants
+      const transactionTypes = TRANSACTION_TYPES;
+
       // Process each integration separately
-      for (const integration of journalEntryIntegrations) {
+      for (const integration of accountingIntegrations) {
         if (!integration.connection) {
           results.push({
             integrationId: integration.key,
@@ -261,79 +260,88 @@ export default function GeneralLedgerPage() {
         }
 
         try {
-          let cursor: string | undefined;
-          let totalEntries = 0;
-          let hasMore = true;
-          const integrationEntries: JournalEntry[] = [];
+          let totalTransactions = 0;
+          const integrationTransactions: Transaction[] = [];
 
-          // Paginate through all journal entries for this integration
-          while (hasMore) {
-            const response = await integrationApp
-              .connection(integration.connection.id)
-              .action('get-journal-entries')
-              .run({ cursor });
+          // Import each transaction type
+          for (const transactionType of transactionTypes) {
+            try {
+              let cursor: string | undefined;
+              let hasMore = true;
 
-            if (response.output && Array.isArray(response.output.records)) {
-              const entries = response.output.records.map((record: any) => {
-                // Ensure line items have ledgerAccountId
-                const lineItems = (record.fields.lineItems || []).map((lineItem: any) => ({
-                  id: lineItem.id,
-                  description: lineItem.description,
-                  amount: lineItem.amount,
-                  type: lineItem.type,
-                  postingType: lineItem.postingType,
-                  dimension: lineItem.dimension,
-                  ledgerAccountId: lineItem.ledgerAccountId,
-                  accountRef: lineItem.accountRef,
-                  exchangeRate: lineItem.exchangeRate,
-                }));
+              // Paginate through all transactions for this type
+              while (hasMore) {
+                const response = await integrationApp
+                  .connection(integration.connection.id)
+                  .action(transactionType.action)
+                  .run({ cursor });
 
-                // Debug: Log the first entry's line items to see the structure
-                if (response.output.records.indexOf(record) === 0) {
-                  console.log(`Sample line items being saved for ${integration.key}:`, lineItems);
+                if (response.output && Array.isArray(response.output.records)) {
+                  const transactions = response.output.records.map((record: any) => {
+                    // Ensure line items have ledgerAccountId
+                    const lineItems = (record.fields.lineItems || []).map((lineItem: any) => ({
+                      id: lineItem.id,
+                      description: lineItem.description,
+                      amount: lineItem.amount,
+                      type: lineItem.type,
+                      postingType: lineItem.postingType,
+                      dimension: lineItem.dimension,
+                      ledgerAccountId: lineItem.ledgerAccountId,
+                      accountRef: lineItem.accountRef,
+                      exchangeRate: lineItem.exchangeRate,
+                    }));
+
+                    // Debug: Log the first entry's line items to see the structure
+                    if (response.output.records.indexOf(record) === 0) {
+                      console.log(`Sample line items being saved for ${integration.key} (${transactionType.classification}):`, lineItems);
+                    }
+
+                    return {
+                      // Include all fields from the record.fields as-is
+                      ...record.fields,
+                      // Ensure line items are properly structured with ledgerAccountId
+                      lineItems,
+                      // Include the record-level metadata
+                      id: record.fields.id || record.id,
+                      createdTime: record.fields.createdTime || record.createdTime,
+                      updatedTime: record.fields.updatedTime || record.updatedTime,
+                      // Include the complete raw fields for reference
+                      rawFields: record.rawFields,
+                    };
+                  });
+
+                  integrationTransactions.push(...transactions);
+                  totalTransactions += transactions.length;
+
+                  // Check if there are more pages
+                  cursor = response.output.cursor;
+                  hasMore = !!cursor && transactions.length > 0;
+
+                  // Optional: Add a small delay to avoid rate limiting
+                  if (hasMore) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                  }
+                } else {
+                  hasMore = false;
                 }
-
-                return {
-                  // Include all fields from the record.fields except lineItems (we handle them separately)
-                  ...record.fields,
-                  // Ensure line items are properly structured with ledgerAccountId
-                  lineItems,
-                  // Include the record-level metadata
-                  id: record.fields.id || record.id,
-                  createdTime: record.fields.createdTime || record.createdTime,
-                  updatedTime: record.fields.updatedTime || record.updatedTime,
-                  // Include the complete raw fields for reference
-                  rawFields: record.rawFields,
-                };
-              });
-
-              integrationEntries.push(...entries);
-              totalEntries += entries.length;
-
-              // Check if there are more pages
-              cursor = response.output.cursor;
-              hasMore = !!cursor && entries.length > 0;
-
-              // Optional: Add a small delay to avoid rate limiting
-              if (hasMore) {
-                await new Promise(resolve => setTimeout(resolve, 100));
               }
-            } else {
-              hasMore = false;
+            } catch (error) {
+              console.warn(`Failed to import ${transactionType.classification} for ${integration.key}:`, error);
+              // Continue with other transaction types even if one fails
             }
           }
 
-          // Save entries to MongoDB for this specific integration
-          if (totalEntries > 0) {
-            console.log(`Saving ${totalEntries} entries for ${integration.key} with connectionId: ${integration.connection.id}`);
-            await saveJournalEntries(integrationEntries, integration.connection.id, integration.key, integration.name);
+          // Save transactions to MongoDB for this specific integration
+          if (totalTransactions > 0 && integration.connection) {
+            console.log(`Saving ${totalTransactions} transactions for ${integration.key} with connectionId: ${integration.connection.id}`);
+            await saveTransactions(integrationTransactions, integration.connection.id, integration.key, integration.name);
           }
 
           results.push({
             integrationId: integration.key,
             integrationName: integration.name,
             success: true,
-            count: totalEntries,
+            count: totalTransactions,
           });
 
         } catch (error) {
@@ -349,13 +357,13 @@ export default function GeneralLedgerPage() {
 
       setImportResults(results);
       
-      // Reload journal entries from database after import
+      // Reload transactions from database after import
       const reloadResponse = await fetch(`/api/journal-entries?limit=${pageSize}&offset=0`);
       if (reloadResponse.ok) {
         const data = await reloadResponse.json();
-        setJournalEntries(data.journalEntries || []);
+        setTransactions(data.transactions || []);
         setCurrentPage(0);
-        setHasMore(data.journalEntries.length === pageSize);
+        setHasMore(data.transactions.length === pageSize);
       }
       
       // Refresh available integrations
@@ -364,14 +372,14 @@ export default function GeneralLedgerPage() {
       const totalImported = results.filter(r => r.success).reduce((sum, r) => sum + r.count, 0);
       
       if (totalImported > 0) {
-        toast.success(`Successfully imported ${totalImported} journal entries from ${results.filter(r => r.success).length} integration(s)`);
+        toast.success(`Successfully imported ${totalImported} transactions from ${results.filter(r => r.success).length} integration(s)`);
       } else {
-        toast.error("No journal entries were imported. Check your integrations.");
+        toast.error("No transactions were imported. Check your integrations.");
       }
 
     } catch (error) {
-      console.error("Error importing journal entries:", error);
-      toast.error("Failed to import journal entries");
+      console.error("Error importing transactions:", error);
+      toast.error("Failed to import transactions");
     } finally {
       setIsImporting(false);
     }
@@ -407,25 +415,118 @@ export default function GeneralLedgerPage() {
     }
   };
 
+  const handleImportLedgerAccounts = async () => {
+    if (!customerId) {
+      toast.error("Please log in to import ledger accounts");
+      return;
+    }
+
+    setIsImportingLedgerAccounts(true);
+
+    try {
+      // Filter for integrations that support ledger accounts
+      const ledgerAccountIntegrations = integrations.filter((integration: any) => 
+        ACCOUNTING_INTEGRATIONS.includes(integration.key as any) && integration.connection
+      );
+
+      if (ledgerAccountIntegrations.length === 0) {
+        toast.error("No accounting integrations found. Please connect an accounting integration first.");
+        setIsImportingLedgerAccounts(false);
+        return;
+      }
+
+      let totalAccounts = 0;
+
+      // Process each integration separately
+      for (const integration of ledgerAccountIntegrations) {
+        if (!integration.connection) continue;
+
+        try {
+          let cursor: string | undefined;
+          let hasMore = true;
+          const integrationAccounts: LedgerAccount[] = [];
+
+          // Paginate through all ledger accounts for this integration
+          while (hasMore) {
+            const response = await integrationApp
+              .connection(integration.connection.id)
+              .action('get-ledger-accounts')
+              .run({ cursor });
+
+            if (response.output && Array.isArray(response.output.records)) {
+              const accounts = response.output.records.map((record: any) => ({
+                ...record.fields,
+                id: record.fields.id || record.id,
+                integrationId: integration.key,
+                integrationName: integration.name,
+                connectionId: integration.connection?.id,
+                rawFields: record.rawFields,
+              }));
+
+              integrationAccounts.push(...accounts);
+              totalAccounts += accounts.length;
+
+              // Check if there are more pages
+              cursor = response.output.cursor;
+              hasMore = !!cursor && accounts.length > 0;
+
+              // Optional: Add a small delay to avoid rate limiting
+              if (hasMore) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+              }
+            } else {
+              hasMore = false;
+            }
+          }
+
+          // Save accounts to MongoDB for this specific integration
+          if (integrationAccounts.length > 0 && integration.connection) {
+            await saveLedgerAccounts(integrationAccounts, integration.connection.id, integration.key, integration.name);
+          }
+
+        } catch (error) {
+          console.error(`Error importing ledger accounts for ${integration.key}:`, error);
+        }
+      }
+
+      // Reload ledger accounts from database
+      await loadLedgerAccounts();
+
+      if (totalAccounts > 0) {
+        toast.success(`Successfully imported ${totalAccounts} ledger accounts`);
+      } else {
+        toast.error("No ledger accounts were imported. Check your integrations.");
+      }
+
+    } catch (error) {
+      console.error("Error importing ledger accounts:", error);
+      toast.error("Failed to import ledger accounts");
+    } finally {
+      setIsImportingLedgerAccounts(false);
+    }
+  };
+
   // Load ledger accounts from MongoDB
   const loadLedgerAccounts = async () => {
     try {
-      // Fetch counts first
+      // First get counts
       const countsResponse = await fetch('/api/ledger-accounts?countOnly=true');
       if (countsResponse.ok) {
         const countsData = await countsResponse.json();
         
+        // Update counts
         const countsMap: {[key: string]: {count: number, name: string}} = {};
-        countsData.counts.forEach((item: any) => {
+        countsData.counts?.forEach((item: any) => {
           countsMap[item.integrationId] = {
             count: item.count,
             name: item.integrationName
           };
         });
         setLedgerAccountCounts(countsMap);
+        setAvailableLedgerAccountIntegrations(countsData.counts?.map((item: any) => item.integrationId) || []);
       }
       
-      // Fetch all ledger accounts (no pagination)
+      // Then get all ledger accounts (no pagination for sidebar)
       const response = await fetch('/api/ledger-accounts?limit=1000&offset=0');
       if (response.ok) {
         const data = await response.json();
@@ -435,6 +536,29 @@ export default function GeneralLedgerPage() {
       }
     } catch (error) {
       console.error('Error loading ledger accounts:', error);
+    }
+  };
+
+  // Load ledger accounts for a specific integration
+  const loadLedgerAccountsForIntegration = async (integrationId: string) => {
+    try {
+      if (integrationId === "all") {
+        // Load all ledger accounts
+        const response = await fetch('/api/ledger-accounts?limit=1000&offset=0');
+        if (response.ok) {
+          const data = await response.json();
+          setLedgerAccounts(data.ledgerAccounts || []);
+        }
+      } else {
+        // Load ledger accounts for specific integration
+        const response = await fetch(`/api/ledger-accounts?integrationId=${integrationId}&limit=1000&offset=0`);
+        if (response.ok) {
+          const data = await response.json();
+          setLedgerAccounts(data.ledgerAccounts || []);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading ledger accounts for integration:', error);
     }
   };
 
@@ -457,168 +581,16 @@ export default function GeneralLedgerPage() {
         setAvailableIntegrations(countsData.counts.map((item: any) => item.integrationId));
       }
     } catch (error) {
-      console.error('Error refreshing available integrations:', error);
+      console.error('Error refreshing integrations:', error);
     }
   };
 
-  // Load ledger accounts for a specific integration
-  const loadLedgerAccountsForIntegration = async (integrationId: string) => {
-    try {
-      if (integrationId === "all") {
-        // Load all ledger accounts (no pagination)
-        const response = await fetch('/api/ledger-accounts?limit=1000&offset=0');
-        if (response.ok) {
-          const data = await response.json();
-          setLedgerAccounts(data.ledgerAccounts || []);
-        }
-      } else {
-        // Load ledger accounts for specific integration (no pagination)
-        const response = await fetch(`/api/ledger-accounts?integrationId=${integrationId}&limit=1000&offset=0`);
-        if (response.ok) {
-          const data = await response.json();
-          setLedgerAccounts(data.ledgerAccounts || []);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading ledger accounts for integration:', error);
-    }
-  };
-
-  const handleImportLedgerAccounts = async () => {
-    if (!customerId) {
-      toast.error("Please log in to import ledger accounts");
-      return;
-    }
-
-    setIsImportingLedgerAccounts(true);
-
-    try {
-      const results: ImportResult[] = [];
-
-      // Filter for integrations that support ledger accounts
-      const ledgerAccountIntegrations = integrations.filter((integration: any) => 
-        ACCOUNTING_INTEGRATIONS.includes(integration.key as any) && integration.connection
-      );
-
-      if (ledgerAccountIntegrations.length === 0) {
-        toast.error("No accounting integrations found. Please connect an accounting integration first.");
-        setIsImportingLedgerAccounts(false);
-        return;
-      }
-
-      // Process each integration separately
-      for (const integration of ledgerAccountIntegrations) {
-        if (!integration.connection) {
-          results.push({
-            integrationId: integration.key,
-            integrationName: integration.name,
-            success: false,
-            count: 0,
-            error: "No active connection found",
-          });
-          continue;
-        }
-
-        try {
-          let cursor: string | undefined;
-          let totalAccounts = 0;
-          let hasMore = true;
-          const integrationAccounts: LedgerAccount[] = [];
-
-          // Paginate through all ledger accounts for this integration
-          while (hasMore) {
-            const response = await integrationApp
-              .connection(integration.connection.id)
-              .action('get-ledger-accounts')
-              .run({ cursor });
-
-            if (response.output && Array.isArray(response.output.records)) {
-              const accounts = response.output.records.map((record: any) => {
-                const fields = record.fields || {};
-                return {
-                  id: record.id,
-                  name: fields.name || record.name || 'Unknown',
-                  type: fields.type || 'Unknown',
-                  status: fields.status || 'Unknown',
-                  currentBalance: fields.currentBalance || 0,
-                  currency: fields.currency || 'USD',
-                  createdTime: fields.createdTime || record.createdTime || new Date().toISOString(),
-                  updatedTime: fields.updatedTime || record.updatedTime || new Date().toISOString(),
-                  classification: fields.classification || 'Unknown',
-                  connectionId: integration.connection?.id || '',
-                  integrationId: integration.key,
-                  integrationName: integration.name,
-                  userId: customerId,
-                  rawFields: record
-                };
-              });
-
-              integrationAccounts.push(...accounts);
-              totalAccounts += accounts.length;
-
-              // Check if there are more records
-              hasMore = response.output.nextCursor && accounts.length > 0;
-              cursor = response.output.nextCursor;
-            } else {
-              hasMore = false;
-            }
-          }
-
-          // Save accounts for this specific integration
-          if (totalAccounts > 0 && integration.connection) {
-            console.log(`Saving ${totalAccounts} ledger accounts for ${integration.key} with connectionId: ${integration.connection.id}`);
-            await saveLedgerAccounts(integrationAccounts, integration.connection.id, integration.key, integration.name);
-          }
-
-          results.push({
-            integrationId: integration.key,
-            integrationName: integration.name,
-            success: true,
-            count: totalAccounts,
-          });
-
-        } catch (error) {
-          results.push({
-            integrationId: integration.key,
-            integrationName: integration.name,
-            success: false,
-            count: 0,
-            error: error instanceof Error ? error.message : "Unknown error",
-          });
-        }
-      }
-
-      // Reload ledger accounts from database after import
-      await loadLedgerAccounts();
-      
-      // Reset active tab to "all" after import
-      setActiveLedgerAccountTab("all");
-      
-      // Refresh available integrations in case new ones were added
-      await refreshAvailableIntegrations();
-      
-      const totalImported = results.filter(r => r.success).reduce((sum, r) => sum + r.count, 0);
-      
-      if (totalImported > 0) {
-        toast.success(`Successfully imported ${totalImported} ledger accounts from ${results.filter(r => r.success).length} integration(s)`);
-      } else {
-        toast.error("No ledger accounts were imported. Check your integrations.");
-      }
-
-    } catch (error) {
-      console.error("Error importing ledger accounts:", error);
-      toast.error("Failed to import ledger accounts");
-    } finally {
-      setIsImportingLedgerAccounts(false);
-    }
-  };
-
-  // Filter journal entries based on search term and selected ledger account
-  const filteredJournalEntries = journalEntries.filter((entry) => {
+  // Filter transactions based on search term and selected ledger account
+  const filteredTransactions = transactions.filter((transaction) => {
     // Filter by selected ledger account
     if (selectedLedgerAccountId) {
       // Check if any line item has the selected ledger account ID
-      const hasMatchingLedgerAccount = entry.lineItems?.some((line: any) => 
+      const hasMatchingLedgerAccount = transaction.lineItems?.some((line: any) => 
         line.ledgerAccountId === selectedLedgerAccountId
       );
       if (!hasMatchingLedgerAccount) return false;
@@ -630,21 +602,24 @@ export default function GeneralLedgerPage() {
     const searchLower = searchTerm.toLowerCase();
     
     // Search in ID
-    if (entry.id?.toLowerCase().includes(searchLower)) return true;
+    if (transaction.id?.toLowerCase().includes(searchLower)) return true;
     
     // Search in memo
-    if (entry.memo?.toLowerCase().includes(searchLower)) return true;
+    if (transaction.memo?.toLowerCase().includes(searchLower)) return true;
     
     // Search in number
-    if (entry.number?.toLowerCase().includes(searchLower)) return true;
+    if (transaction.number?.toLowerCase().includes(searchLower)) return true;
+    
+    // Search in classification
+    if (transaction.classification?.toLowerCase().includes(searchLower)) return true;
     
     // Search in line items descriptions
-    if (entry.lineItems?.some((line: any) => 
+    if (transaction.lineItems?.some((line: any) => 
       line.description?.toLowerCase().includes(searchLower)
     )) return true;
     
     // Search in line items account names
-    if (entry.lineItems?.some((line: any) => 
+    if (transaction.lineItems?.some((line: any) => 
       line.accountRef?.name?.toLowerCase().includes(searchLower)
     )) return true;
     
@@ -686,15 +661,15 @@ export default function GeneralLedgerPage() {
         const response = await fetch(`/api/journal-entries?limit=${pageSize}&offset=0`);
         if (response.ok) {
           const data = await response.json();
-          setJournalEntries(data.journalEntries || []);
-          setHasMore(data.journalEntries.length === pageSize);
+          setTransactions(data.transactions || []);
+          setHasMore(data.transactions.length === pageSize);
         }
       } else {
         // Load all entries for specific integration (no pagination for filtered views)
         const response = await fetch(`/api/journal-entries?integrationId=${integrationId}&limit=1000&offset=0`);
         if (response.ok) {
           const data = await response.json();
-          setJournalEntries(data.journalEntries || []);
+          setTransactions(data.transactions || []);
           setHasMore(false); // No pagination for filtered views
         }
       }
@@ -705,6 +680,41 @@ export default function GeneralLedgerPage() {
     }
   };
 
+  // Add this useEffect after the other useEffects
+  useEffect(() => {
+    // Only trigger on the 'all' tab
+    if (activeTab === 'all') {
+      if (searchTerm) {
+        // Fetch all transactions for searching
+        setIsLoading(true);
+        fetch('/api/journal-entries?limit=1000&offset=0')
+          .then(res => res.json())
+          .then(data => {
+            setTransactions(data.transactions || []);
+            setHasMore(false); // No infinite scroll during search
+          })
+          .catch(err => {
+            console.error('Failed to fetch all transactions for search:', err);
+          })
+          .finally(() => setIsLoading(false));
+      } else {
+        // If search is cleared, reload paginated view
+        setIsLoading(true);
+        fetch(`/api/journal-entries?limit=${pageSize}&offset=0`)
+          .then(res => res.json())
+          .then(data => {
+            setTransactions(data.transactions || []);
+            setCurrentPage(0);
+            setHasMore((data.transactions || []).length === pageSize);
+          })
+          .catch(err => {
+            console.error('Failed to reload paginated transactions:', err);
+          })
+          .finally(() => setIsLoading(false));
+      }
+    }
+  }, [searchTerm, activeTab]);
+
   return (
     <div className="px-4 py-6 sm:px-0">
       <div className="flex flex-col mb-4">
@@ -712,7 +722,7 @@ export default function GeneralLedgerPage() {
           General Ledger
         </h1>
         <p className="text-sm text-gray-500">
-          Import and manage journal entries from your connected accounting integrations.
+          Import and manage transactions from your connected accounting integrations.
         </p>
       </div>
 
@@ -720,8 +730,8 @@ export default function GeneralLedgerPage() {
         {/* Import Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base">
                 <BookOpen className="h-4 w-4" />
                 Import Ledger Accounts
               </CardTitle>
@@ -729,7 +739,7 @@ export default function GeneralLedgerPage() {
                 Import all ledger accounts from your connected accounting integrations.
               </p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <Button 
                 onClick={handleImportLedgerAccounts}
                 disabled={isImportingLedgerAccounts}
@@ -750,18 +760,18 @@ export default function GeneralLedgerPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base">
                 <Download className="h-4 w-4" />
-                Import Journal Entries
+                Import Transactions
               </CardTitle>
               <p className="text-xs text-gray-500">
-                Import all journal entries from your connected accounting integrations.
+                Import all transactions from your connected accounting integrations.
               </p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <Button 
-                onClick={handleImportJournalEntries}
+                onClick={handleImportTransactions}
                 disabled={isImporting}
                 className="w-full sm:w-auto"
               >
@@ -773,7 +783,7 @@ export default function GeneralLedgerPage() {
                 ) : (
                   <>
                     <Download className="mr-2 h-4 w-4" />
-                    Import All Journal Entries
+                    Import All Transactions
                   </>
                 )}
               </Button>
@@ -812,7 +822,7 @@ export default function GeneralLedgerPage() {
                     <div className="flex items-center gap-2">
                       {result.success && (
                         <Badge variant="secondary">
-                          {result.count} entries
+                          {result.count} transactions
                         </Badge>
                       )}
                       <Badge variant={result.success ? "default" : "destructive"}>
@@ -826,71 +836,42 @@ export default function GeneralLedgerPage() {
           </Card>
         )}
 
-        {/* Journal Entries and Ledger Accounts */}
+        {/* Transactions and Ledger Accounts */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Ledger Accounts Sidebar */}
           <div className="lg:col-span-1">
             <Card>
               <CardHeader>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="flex items-center gap-2">
-                      <BookOpen className="h-4 w-4" />
-                      Ledger Accounts
-                    </CardTitle>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="text"
-                        placeholder="Search..."
-                        value={ledgerAccountSearchTerm}
-                        onChange={(e) => setLedgerAccountSearchTerm(e.target.value)}
-                        className="w-20 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                      />
-                      {ledgerAccountSearchTerm && (
-                        <button
-                          onClick={() => setLedgerAccountSearchTerm("")}
-                          className="px-1 py-1 text-gray-500 hover:text-gray-700 text-xs"
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">
-                      {ledgerAccountSearchTerm ? `${filteredLedgerAccounts.length} filtered` : `${ledgerAccounts.length} accounts loaded`}
-                      {selectedLedgerAccountId && " • 1 selected"}
-                    </p>
-                    {selectedLedgerAccountId && (
-                      <button
-                        onClick={() => setSelectedLedgerAccountId(null)}
-                        className="text-xs text-blue-600 hover:text-blue-800 mt-1"
-                      >
-                        Clear selection
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
+                <CardTitle>Ledger Accounts</CardTitle>
+                <p className="text-sm text-gray-500">
+                  {ledgerAccounts.length} accounts stored
+                </p>
+                <input
+                  type="text"
+                  placeholder="Search ledger accounts..."
+                  value={ledgerAccountSearchTerm}
+                  onChange={(e) => setLedgerAccountSearchTerm(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+
                 {/* Ledger Account Integration Tabs */}
-                {Object.keys(ledgerAccountCounts).length > 0 && (
-                  <div className="flex space-x-1 mb-4 border-b">
+                {availableLedgerAccountIntegrations.length > 0 && (
+                  <div className="flex space-x-1 mt-4 border-b">
                     <button
                       onClick={() => {
                         setActiveLedgerAccountTab("all");
                         loadLedgerAccountsForIntegration("all");
                       }}
                       className={cn(
-                        "px-2 py-1 text-xs font-medium rounded-t transition-colors",
+                        "px-4 py-2 text-sm font-medium rounded-t-lg transition-colors",
                         activeLedgerAccountTab === "all"
                           ? "bg-blue-100 text-blue-700 border-b-2 border-blue-700"
                           : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                       )}
                     >
-                      All
+                      All ({ledgerAccounts.length})
                     </button>
-                    {Object.keys(ledgerAccountCounts).map((integrationId) => {
+                    {availableLedgerAccountIntegrations.map((integrationId) => {
                       const integrationData = ledgerAccountCounts[integrationId];
                       const integrationName = integrationData?.name || integrationId;
                       const count = integrationData?.count || 0;
@@ -903,7 +884,7 @@ export default function GeneralLedgerPage() {
                             loadLedgerAccountsForIntegration(integrationId);
                           }}
                           className={cn(
-                            "px-2 py-1 text-xs font-medium rounded-t transition-colors",
+                            "px-4 py-2 text-sm font-medium rounded-t-lg transition-colors",
                             activeLedgerAccountTab === integrationId
                               ? "bg-blue-100 text-blue-700 border-b-2 border-blue-700"
                               : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
@@ -915,60 +896,52 @@ export default function GeneralLedgerPage() {
                     })}
                   </div>
                 )}
-                
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {filteredLedgerAccounts.length > 0 ? (
-                    filteredLedgerAccounts.map((account) => (
-                      <button
-                        key={`${account.integrationId}-${account.id}`}
-                        onClick={() => setSelectedLedgerAccountId(account.id)}
-                        className={cn(
-                          "w-full text-left p-2 rounded text-sm transition-colors",
-                          selectedLedgerAccountId === account.id
-                            ? "bg-blue-100 text-blue-700 font-medium"
-                            : "text-gray-600 hover:bg-gray-100"
-                        )}
-                      >
-                        <div className="font-medium truncate">{account.name}</div>
-                        <div className="text-xs text-blue-600 font-mono">
-                          ID: {account.id}
+                  {filteredLedgerAccounts.map((account) => (
+                    <div
+                      key={`${account.integrationId}-${account.id}-${account.connectionId}`}
+                      className={cn(
+                        "p-3 border rounded-lg cursor-pointer transition-colors",
+                        selectedLedgerAccountId === account.id
+                          ? "bg-blue-50 border-blue-200"
+                          : "hover:bg-gray-50"
+                      )}
+                      onClick={() => setSelectedLedgerAccountId(account.id)}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{account.name}</p>
+                          <p className="text-xs text-gray-500 truncate">ID: {account.id}</p>
+                          <p className="text-xs text-gray-500 truncate">Type: {account.type}</p>
+                          {account.classification && (
+                            <p className="text-xs text-gray-500 truncate">Classification: {account.classification}</p>
+                          )}
+                          {account.integrationName && (
+                            <p className="text-xs text-purple-600 truncate">{account.integrationName}</p>
+                          )}
                         </div>
-                        <div className="text-xs text-gray-500">
-                          {account.type} • {account.classification}
-                        </div>
-                        <div className="text-xs font-medium">
-                          {account.currentBalance.toLocaleString('en-US', {
-                            style: 'currency',
-                            currency: account.currency || 'USD'
-                          })}
-                        </div>
-                      </button>
-                    ))
-                  ) : (
-                    <div className="text-center py-4 text-gray-500 text-sm">
-                      {ledgerAccountSearchTerm 
-                        ? `No ledger accounts found matching "${ledgerAccountSearchTerm}". Try a different search term.`
-                        : "No ledger accounts loaded. Import some to get started."
-                      }
+                      </div>
                     </div>
-                  )}
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Journal Entries List */}
+          {/* Transactions List */}
           <div className="lg:col-span-3">
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <div>
-                    <CardTitle>Journal Entries</CardTitle>
+                    <CardTitle>Transactions</CardTitle>
                     <p className="text-sm text-gray-500">
-                      {isLoading ? "Loading..." : `${totalCount} entries stored`}
-                      {searchTerm && ` • ${filteredJournalEntries.length} filtered`}
-                      {selectedLedgerAccountId && ` • ${filteredJournalEntries.length} from selected account`}
-                      {activeTab !== "all" && ` • ${filteredJournalEntries.length} from ${integrationCounts[activeTab]?.name || activeTab}`}
+                      {isLoading ? "Loading..." : `${totalCount} transactions stored`}
+                      {searchTerm && ` • ${filteredTransactions.length} filtered`}
+                      {selectedLedgerAccountId && ` • ${filteredTransactions.length} from selected account`}
+                      {activeTab !== "all" && ` • ${filteredTransactions.length} from ${integrationCounts[activeTab]?.name || activeTab}`}
                     </p>
                     {selectedLedgerAccountId && (
                       <button
@@ -979,25 +952,15 @@ export default function GeneralLedgerPage() {
                       </button>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      placeholder="Search entries..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                    {searchTerm && (
-                      <button
-                        onClick={() => setSearchTerm("")}
-                        className="px-2 py-2 text-gray-500 hover:text-gray-700"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search transactions..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
                 </div>
-                
+
                 {/* Integration Tabs */}
                 {availableIntegrations.length > 0 && (
                   <div className="flex space-x-1 mt-4 border-b">
@@ -1013,7 +976,7 @@ export default function GeneralLedgerPage() {
                           : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                       )}
                     >
-                      All ({selectedLedgerAccountId ? filteredJournalEntries.length : totalCount})
+                      All ({selectedLedgerAccountId ? filteredTransactions.length : totalCount})
                     </button>
                     {availableIntegrations.map((integrationId) => {
                       const integrationData = integrationCounts[integrationId];
@@ -1022,7 +985,7 @@ export default function GeneralLedgerPage() {
                       
                       // Calculate filtered count for this integration
                       const filteredCount = selectedLedgerAccountId 
-                        ? filteredJournalEntries.filter(entry => entry.integrationId === integrationId).length
+                        ? filteredTransactions.filter(transaction => transaction.integrationId === integrationId).length
                         : originalCount;
                       
                       return (
@@ -1060,135 +1023,132 @@ export default function GeneralLedgerPage() {
                 {isLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin" />
-                    <span className="ml-2">Loading journal entries...</span>
+                    <span className="ml-2">Loading transactions...</span>
                   </div>
-                ) : journalEntries.length > 0 ? (
+                ) : filteredTransactions.length > 0 ? (
                   <div className="space-y-3">
-                    {filteredJournalEntries.map((entry, index) => {
-                      const isLastEntry = index === filteredJournalEntries.length - 1;
-                      // Calculate total amount from line items
-                      const totalAmount = entry.lineItems?.reduce((sum: number, line: any) => {
-                        return sum + (typeof line.amount === 'number' ? line.amount : 0);
-                      }, 0) || 0;
+                    {filteredTransactions.map((transaction, index) => {
+                      const isLastEntry = index === filteredTransactions.length - 1;
 
                       return (
                         <div 
-                          key={`${entry.integrationId}-${entry.id}-${entry.connectionId}`} 
+                          key={`${transaction.integrationId}-${transaction.id}-${transaction.connectionId}`} 
                           className="border rounded-lg p-4 mb-4"
                           ref={isLastEntry ? lastEntryElementRef : null}
                         >
                           {/* Header */}
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex-1">
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                  <p className="font-bold text-lg">ID: {entry.id}</p>
-                                  {entry.integrationName && (
-                                    <p className="font-medium text-purple-600">Integration: {entry.integrationName}</p>
+                                  <p className="font-bold text-lg">ID: {transaction.id}</p>
+                                  {transaction.integrationName && (
+                                    <p className="font-medium text-purple-600">Integration: {transaction.integrationName}</p>
                                   )}
                                 </div>
                                 <div>
-                                  <p className="font-bold text-lg text-blue-600">Ledger Account ID</p>
-                                  <p className="font-medium text-blue-600">
-                                    {entry.ledgerAccountId || 'N/A'}
-                                  </p>
-                                </div>
-                                <div>
-                                  {entry.memo && (
+                                  {transaction.memo && (
                                     <>
                                       <p className="font-bold text-lg">Memo</p>
-                                      <p className="font-medium text-gray-700">{entry.memo}</p>
+                                      <p className="font-medium text-gray-700">{transaction.memo}</p>
                                     </>
                                   )}
-                                  {!entry.memo && entry.number && (
+                                  {!transaction.memo && transaction.number && (
                                     <>
                                       <p className="font-bold text-lg">Number</p>
-                                      <p className="font-medium text-gray-700">{entry.number}</p>
+                                      <p className="font-medium text-gray-700">{transaction.number}</p>
                                     </>
                                   )}
                                 </div>
                               </div>
                             </div>
                             <div className="text-right ml-4">
-                              <p className={`font-bold text-lg ${totalAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {typeof totalAmount === 'number' && !isNaN(totalAmount)
-                                  ? `${totalAmount >= 0 ? '+' : ''}${totalAmount.toLocaleString('en-US', {
+                              <p className="font-bold text-lg text-black">
+                                {typeof transaction.totalAmount === 'number' && !isNaN(transaction.totalAmount)
+                                  ? `${transaction.totalAmount.toLocaleString('en-US', {
                                       style: 'currency',
-                                      currency: entry.currency || 'USD'
+                                      currency: transaction.currency || 'USD'
                                     })}`
                                   : 'N/A'
                                 }
                               </p>
-                              <p className="text-sm text-gray-500">{entry.currency}</p>
+                              <p className="text-sm text-gray-500">{transaction.currency}</p>
                             </div>
                           </div>
 
                           {/* Transaction Details */}
                           <div className="grid grid-cols-2 gap-4 mb-3 text-sm">
                             <div>
-                              <p><span className="font-medium">Transaction Date:</span> {new Date(entry.transactionDate).toLocaleDateString()}</p>
-                              <p><span className="font-medium">Created:</span> {new Date(entry.createdTime).toLocaleString()}</p>
-                              <p><span className="font-medium">Updated:</span> {new Date(entry.updatedTime).toLocaleString()}</p>
+                              <p><span className="font-medium">Transaction Date:</span> {new Date(transaction.transactionDate).toLocaleDateString()}</p>
+                              <p><span className="font-medium">Created:</span> {new Date(transaction.createdTime).toLocaleString()}</p>
+                              <p><span className="font-medium">Updated:</span> {new Date(transaction.updatedTime).toLocaleString()}</p>
                             </div>
                             <div>
-                              {entry.number && <p><span className="font-medium">Number:</span> {entry.number}</p>}
-                              {entry.memo && <p><span className="font-medium">Memo:</span> {entry.memo}</p>}
+                              {transaction.number && <p><span className="font-medium">Number:</span> {transaction.number}</p>}
+                              {transaction.memo && <p><span className="font-medium">Memo:</span> {transaction.memo}</p>}
+                              <p><span className="font-medium">Classification:</span> {transaction.classification}</p>
                             </div>
                           </div>
 
                           {/* Line Items */}
-                          {entry.lineItems && entry.lineItems.length > 0 && (
+                          {transaction.lineItems && transaction.lineItems.length > 0 && (
                             <div className="mb-3">
-                              <p className="font-medium mb-2">Line Items ({entry.lineItems.length}):</p>
+                              <p className="font-medium mb-2">Line Items ({transaction.lineItems.length}):</p>
                               <div className="space-y-2">
-                                {entry.lineItems.map((line: any, index: number) => (
-                                  <div key={`${entry.id}-${line.id || index}`} className="bg-gray-50 p-3 rounded text-sm">
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                      <div>
-                                        <p className="font-bold text-xs text-gray-500 uppercase">ID</p>
-                                        <p className="font-medium">{line.id}</p>
+                                {transaction.lineItems.map((line: any, lineIndex: number) => {
+                                  // Create a truly unique key that combines transaction and line identifiers
+                                  const uniqueKey = `${transaction.integrationId}-${transaction.id}-${transaction.connectionId}-${line.id || 'no-id'}-${lineIndex}`;
+                                  
+                                  return (
+                                    <div key={uniqueKey} className="bg-gray-50 p-3 rounded text-sm">
+                                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                                        <div>
+                                          <p className="font-bold text-xs text-gray-500 uppercase">ID</p>
+                                          <p className="font-medium">{line.id}</p>
+                                        </div>
+                                        <div>
+                                          <p className="font-bold text-xs text-gray-500 uppercase">Ledger Account ID</p>
+                                          <p className="font-medium text-blue-600">
+                                            {line.ledgerAccountId || 'N/A'}
+                                          </p>
+                                        </div>
+                                        <div className="flex flex-row items-center justify-between md:block md:space-y-1">
+                                          <div>
+                                            <p className="font-bold text-xs text-gray-500 uppercase">Type</p>
+                                            <p className="font-medium whitespace-normal break-all">{line.type}</p>
+                                            {line.postingType && (
+                                              <p className="text-xs text-gray-500">({line.postingType})</p>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <div className="flex flex-col items-end justify-center md:items-end md:justify-center h-full">
+                                          <p className="font-bold text-xs text-gray-500 uppercase">Amount</p>
+                                          <p className="font-medium text-black">
+                                            {typeof line.amount === 'number' && !isNaN(line.amount)
+                                              ? `${line.amount.toLocaleString('en-US', {
+                                                  style: 'currency',
+                                                  currency: transaction.currency || 'USD'
+                                                })}`
+                                              : 'N/A'
+                                            }
+                                          </p>
+                                        </div>
                                       </div>
-                                      <div>
-                                        <p className="font-bold text-xs text-gray-500 uppercase">Ledger Account ID</p>
-                                        <p className="font-medium text-blue-600">
-                                          {line.ledgerAccountId || 'N/A'}
-                                        </p>
-                                      </div>
-                                      <div>
-                                        <p className="font-bold text-xs text-gray-500 uppercase">Type</p>
-                                        <p className="font-medium">{line.type}</p>
-                                        {line.postingType && (
-                                          <p className="text-xs text-gray-500">({line.postingType})</p>
-                                        )}
-                                      </div>
-                                      <div className="text-right">
-                                        <p className="font-bold text-xs text-gray-500 uppercase">Amount</p>
-                                        <p className={`font-medium ${line.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                          {typeof line.amount === 'number' && !isNaN(line.amount)
-                                            ? `${line.amount >= 0 ? '+' : ''}${line.amount.toLocaleString('en-US', {
-                                                style: 'currency',
-                                                currency: entry.currency || 'USD'
-                                              })}`
-                                            : 'N/A'
-                                          }
-                                        </p>
-                                      </div>
+                                      {line.description && (
+                                        <div className="mt-2">
+                                          <p className="font-bold text-xs text-gray-500 uppercase">Description</p>
+                                          <p className="text-sm">{line.description}</p>
+                                        </div>
+                                      )}
+                                      {line.accountRef && (
+                                        <div className="mt-2">
+                                          <p className="font-bold text-xs text-gray-500 uppercase">Account</p>
+                                          <p className="text-sm">{line.accountRef.name} ({line.accountRef.value})</p>
+                                        </div>
+                                      )}
                                     </div>
-                                    {(line.description || line.dimension || line.accountRef) && (
-                                      <div className="mt-2 pt-2 border-t border-gray-200">
-                                        {line.description && (
-                                          <p className="text-xs"><span className="font-medium">Description:</span> {line.description}</p>
-                                        )}
-                                        {line.dimension && (
-                                          <p className="text-xs"><span className="font-medium">Dimension:</span> {line.dimension}</p>
-                                        )}
-                                        {line.accountRef && (
-                                          <p className="text-xs"><span className="font-medium">Account:</span> {line.accountRef.name} ({line.accountRef.value})</p>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             </div>
                           )}
@@ -1197,7 +1157,7 @@ export default function GeneralLedgerPage() {
                           <div className="text-xs text-gray-600">
                             <p className="font-medium mb-1">All Fields:</p>
                             <pre className="bg-gray-100 p-2 rounded overflow-auto max-h-32">
-                              {JSON.stringify(entry, null, 2)}
+                              {JSON.stringify(transaction, null, 2)}
                             </pre>
                           </div>
                         </div>
@@ -1208,22 +1168,22 @@ export default function GeneralLedgerPage() {
                     {isLoadingMore && (
                       <div className="flex items-center justify-center py-4">
                         <Loader2 className="h-6 w-6 animate-spin" />
-                        <span className="ml-2">Loading more entries...</span>
+                        <span className="ml-2">Loading more transactions...</span>
                       </div>
                     )}
                     
                     {/* End of list indicator */}
-                    {!hasMore && filteredJournalEntries.length > 0 && (
+                    {!hasMore && filteredTransactions.length > 0 && (
                       <p className="text-center text-gray-500 text-sm py-4">
-                        No more entries to load
+                        No more transactions to load
                       </p>
                     )}
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
                     {searchTerm 
-                      ? `No journal entries found matching "${searchTerm}". Try a different search term.`
-                      : "No journal entries found. Import some entries to get started."
+                      ? `No transactions found matching "${searchTerm}". Try a different search term.`
+                      : "No transactions found. Import some transactions to get started."
                     }
                   </div>
                 )}
