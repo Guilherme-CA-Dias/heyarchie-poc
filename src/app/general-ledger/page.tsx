@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Download, AlertCircle, CheckCircle, BookOpen } from "lucide-react";
 import { useAuth } from "@/app/auth-provider";
 import { useIntegrationApp, useIntegrations } from "@integration-app/react";
+import { Integration } from "@integration-app/sdk";
 import { toast } from "sonner";
 import { ACCOUNTING_INTEGRATIONS, TRANSACTION_TYPES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -63,7 +64,7 @@ interface ImportResult {
 }
 
 export default function GeneralLedgerPage() {
-  const { customerId, customerName } = useAuth();
+  const { customerId } = useAuth();
   const integrationApp = useIntegrationApp();
   const { integrations } = useIntegrations();
   const [isImporting, setIsImporting] = useState(false);
@@ -279,7 +280,7 @@ export default function GeneralLedgerPage() {
                 if (response.output && Array.isArray(response.output.records)) {
                   const transactions = response.output.records.map((record: any) => {
                     // Ensure line items have ledgerAccountId
-                    const lineItems = (record.fields.lineItems || []).map((lineItem: any) => ({
+                    const lineItems = (record.fields?.lineItems || []).map((lineItem: any) => ({
                       id: lineItem.id,
                       description: lineItem.description,
                       amount: lineItem.amount,
@@ -302,9 +303,9 @@ export default function GeneralLedgerPage() {
                       // Ensure line items are properly structured with ledgerAccountId
                       lineItems,
                       // Include the record-level metadata
-                      id: record.fields.id || record.id,
-                      createdTime: record.fields.createdTime || record.createdTime,
-                      updatedTime: record.fields.updatedTime || record.updatedTime,
+                      id: record.fields?.id || record.id,
+                      createdTime: record.fields?.createdTime || record.createdTime,
+                      updatedTime: record.fields?.updatedTime || record.updatedTime,
                       // Include the complete raw fields for reference
                       rawFields: record.rawFields,
                     };
@@ -585,18 +586,9 @@ export default function GeneralLedgerPage() {
     }
   };
 
-  // Filter transactions based on search term and selected ledger account
+  // Filter transactions based on search term (ledger account filtering is now done server-side)
   const filteredTransactions = transactions.filter((transaction) => {
-    // Filter by selected ledger account
-    if (selectedLedgerAccountId) {
-      // Check if any line item has the selected ledger account ID
-      const hasMatchingLedgerAccount = transaction.lineItems?.some((line: any) => 
-        line.ledgerAccountId === selectedLedgerAccountId
-      );
-      if (!hasMatchingLedgerAccount) return false;
-    }
-    
-    // Filter by search term
+    // Filter by search term only
     if (!searchTerm) return true;
     
     const searchLower = searchTerm.toLowerCase();
@@ -680,10 +672,38 @@ export default function GeneralLedgerPage() {
     }
   };
 
-  // Add this useEffect after the other useEffects
+  // Load transactions for a specific ledger account
+  const loadTransactionsForLedgerAccount = async (ledgerAccountId: string) => {
+    try {
+      setIsLoading(true);
+      setCurrentPage(0);
+      
+      // Load all transactions for the selected ledger account (no pagination for filtered views)
+      const response = await fetch(`/api/journal-entries?ledgerAccountId=${ledgerAccountId}&limit=1000&offset=0`);
+      if (response.ok) {
+        const data = await response.json();
+        setTransactions(data.transactions || []);
+        setHasMore(false); // No pagination for filtered views
+      }
+    } catch (error) {
+      console.error('Error loading transactions for ledger account:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Add useEffect to handle ledger account selection
   useEffect(() => {
-    // Only trigger on the 'all' tab
-    if (activeTab === 'all') {
+    if (selectedLedgerAccountId) {
+      if (searchTerm) {
+        // When searching with a ledger account selected, fetch all transactions for that ledger account
+        loadTransactionsForLedgerAccount(selectedLedgerAccountId);
+      } else {
+        // Load transactions for the selected ledger account
+        loadTransactionsForLedgerAccount(selectedLedgerAccountId);
+      }
+    } else if (activeTab === 'all') {
+      // If no ledger account is selected and we're on the 'all' tab, load paginated transactions
       if (searchTerm) {
         // Fetch all transactions for searching
         setIsLoading(true);
@@ -698,7 +718,6 @@ export default function GeneralLedgerPage() {
           })
           .finally(() => setIsLoading(false));
       } else {
-        // If search is cleared, reload paginated view
         setIsLoading(true);
         fetch(`/api/journal-entries?limit=${pageSize}&offset=0`)
           .then(res => res.json())
@@ -713,7 +732,45 @@ export default function GeneralLedgerPage() {
           .finally(() => setIsLoading(false));
       }
     }
-  }, [searchTerm, activeTab]);
+  }, [selectedLedgerAccountId, activeTab, searchTerm]);
+
+  // Clear ledger account filter
+  const clearLedgerAccountFilter = () => {
+    setSelectedLedgerAccountId(null);
+    // Reload transactions based on current tab and search term
+    if (activeTab === 'all') {
+      if (searchTerm) {
+        // If there's a search term, fetch all transactions for searching
+        setIsLoading(true);
+        fetch('/api/journal-entries?limit=1000&offset=0')
+          .then(res => res.json())
+          .then(data => {
+            setTransactions(data.transactions || []);
+            setHasMore(false); // No infinite scroll during search
+          })
+          .catch(err => {
+            console.error('Failed to fetch all transactions for search:', err);
+          })
+          .finally(() => setIsLoading(false));
+      } else {
+        // Load paginated transactions
+        setIsLoading(true);
+        fetch(`/api/journal-entries?limit=${pageSize}&offset=0`)
+          .then(res => res.json())
+          .then(data => {
+            setTransactions(data.transactions || []);
+            setCurrentPage(0);
+            setHasMore((data.transactions || []).length === pageSize);
+          })
+          .catch(err => {
+            console.error('Failed to reload paginated transactions:', err);
+          })
+          .finally(() => setIsLoading(false));
+      }
+    } else {
+      loadEntriesForIntegration(activeTab);
+    }
+  };
 
   return (
     <div className="px-4 py-6 sm:px-0">
@@ -938,14 +995,17 @@ export default function GeneralLedgerPage() {
                   <div>
                     <CardTitle>Transactions</CardTitle>
                     <p className="text-sm text-gray-500">
-                      {isLoading ? "Loading..." : `${totalCount} transactions stored`}
+                      {isLoading ? "Loading..." : (
+                        selectedLedgerAccountId 
+                          ? `${filteredTransactions.length} transactions for selected account`
+                          : `${totalCount} transactions stored`
+                      )}
                       {searchTerm && ` • ${filteredTransactions.length} filtered`}
-                      {selectedLedgerAccountId && ` • ${filteredTransactions.length} from selected account`}
-                      {activeTab !== "all" && ` • ${filteredTransactions.length} from ${integrationCounts[activeTab]?.name || activeTab}`}
+                      {activeTab !== "all" && !selectedLedgerAccountId && ` • ${filteredTransactions.length} from ${integrationCounts[activeTab]?.name || activeTab}`}
                     </p>
                     {selectedLedgerAccountId && (
                       <button
-                        onClick={() => setSelectedLedgerAccountId(null)}
+                        onClick={clearLedgerAccountFilter}
                         className="text-xs text-blue-600 hover:text-blue-800 mt-1"
                       >
                         Clear ledger account filter
@@ -984,9 +1044,16 @@ export default function GeneralLedgerPage() {
                       const originalCount = integrationData?.count || 0;
                       
                       // Calculate filtered count for this integration
-                      const filteredCount = selectedLedgerAccountId 
-                        ? filteredTransactions.filter(transaction => transaction.integrationId === integrationId).length
-                        : originalCount;
+                      let filteredCount = originalCount;
+                      if (selectedLedgerAccountId) {
+                        // When a ledger account is selected, count transactions for this integration that match the ledger account
+                        filteredCount = filteredTransactions.filter(transaction => 
+                          transaction.integrationId === integrationId
+                        ).length;
+                      } else if (activeTab === integrationId) {
+                        // When viewing a specific integration tab, show the count for that integration
+                        filteredCount = filteredTransactions.length;
+                      }
                       
                       return (
                         <button

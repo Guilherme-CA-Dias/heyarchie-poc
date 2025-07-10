@@ -11,6 +11,92 @@ This is an application showcasing how you can implement Importing Content and Fi
 - MongoDB connection string (We provide a docker-compose file to spin up a local MongoDB instance. See [Using mongodb via Docker](#using-mongodb-via-docker) for more details.)
 - AWS credentials (for S3)
 
+## Project Structure
+
+```
+heyarchie-poc/
+├── membrane/                          # Integration.app configuration files
+│   └── membrane/                      # Membrane configuration
+│       ├── actions/                   # API actions for integrations
+│       │   ├── download-content-item/ # Content download actions
+│       │   ├── find-content-item-by-id/
+│       │   ├── get-bills/            # Accounting actions
+│       │   ├── get-credit-notes/
+│       │   ├── get-invoices/
+│       │   ├── get-journal-entries/
+│       │   ├── get-ledger-accounts/
+│       │   ├── get-payments/
+│       │   └── get-sales-receipts/
+│       ├── appEventTypes/            # Event type definitions
+│       ├── dataSources/              # Data source configurations
+│       │   ├── bills/
+│       │   ├── content-items/
+│       │   ├── credit-notes/
+│       │   ├── invoices/
+│       │   ├── journal-entries/
+│       │   ├── ledger-accounts/
+│       │   ├── payments/
+│       │   └── sales-receipt/
+│       ├── fieldMappings/            # Field mapping configurations
+│       ├── flows/                    # Integration flows
+│       │   ├── download-content-item/
+│       │   ├── download-document/
+│       │   ├── receive-bill-events/
+│       │   ├── receive-content-item-events/
+│       │   ├── receive-credit-note-events/
+│       │   ├── receive-invoice-events/
+│       │   ├── receive-journal-entry-events/
+│       │   ├── receive-ledger-account-events/
+│       │   ├── receive-payment-events/
+│       │   └── receive-sales-receipt-events/
+│       └── integrations/             # Integration configurations
+│           ├── box/
+│           ├── dropbox/
+│           ├── google-drive/
+│           ├── microsoft-sharepoint/
+│           ├── onedrive/
+│           ├── quickbooks/
+│           └── xero/
+├── src/
+│   ├── app/                          # Next.js App Router
+│   │   ├── api/                      # API routes
+│   │   │   ├── documents/           # Document management APIs
+│   │   │   ├── inngest/             # Background job handling
+│   │   │   ├── integration-token/   # Integration authentication
+│   │   │   ├── integrations/        # Integration management
+│   │   │   ├── journal-entries/     # General ledger transactions API
+│   │   │   ├── ledger-accounts/     # Ledger accounts API
+│   │   │   └── webhooks/            # Webhook handlers
+│   │   ├── general-ledger/          # General ledger page
+│   │   ├── integrations/            # Integrations management page
+│   │   └── knowledge/               # Knowledge base page
+│   ├── components/                   # Reusable UI components
+│   │   ├── ui/                      # Shadcn UI components
+│   │   ├── auth-test.tsx
+│   │   └── header.tsx
+│   ├── hooks/                       # Custom React hooks
+│   ├── inngest/                     # Background job client
+│   ├── lib/                         # Utility libraries
+│   ├── models/                      # MongoDB models
+│   └── types/                       # TypeScript type definitions
+├── public/                          # Static assets
+├── docker-compose.yml               # Local MongoDB setup
+├── membrane.config.yml              # Integration.app workspace config
+└── package.json
+```
+
+## Important Notes
+
+### Journal Entries vs General Ledger Transactions
+
+**⚠️ Pending Change**: Throughout the codebase, you may see references to "journal entries" in file names, API routes, and database models. These should be understood as **general ledger transactions**. The naming convention is being updated to reflect this more accurately.
+
+- Files like `journal-entries/` in the API routes actually handle general ledger transactions
+- Database models like `JournalEntry` represent general ledger transaction records
+- The functionality includes importing and managing transactions from accounting integrations (QuickBooks, Xero, etc.)
+
+This naming inconsistency is being addressed in future updates to improve code clarity.
+
 ## Setup
 
 ### 1. **Clone repository & Install dependencies:**
@@ -77,9 +163,30 @@ You can now use the `MONGODB_URI` environment variable to connect to the databas
 MONGODB_URI=mongodb://admin:password123@localhost:27017/knowledge
 ```
 
+## Features
+
+### General Ledger Management
+- Import transactions from accounting integrations (QuickBooks, Xero)
+- Filter transactions by ledger accounts
+- View transaction line items and details
+- Search and filter functionality
+- Integration-specific transaction views
+
+### Document Management
+- Import documents from cloud storage (Google Drive, Dropbox, OneDrive, etc.)
+- Real-time document synchronization
+- Document search and filtering
+
+### Knowledge Base
+- Organize imported content into a searchable knowledge base
+- Integration-based content grouping
+- Document navigation and viewing
+
 ## Todos
 
 - [ ] Get events working for all apps
+- [ ] Update naming convention from "journal entries" to "general ledger transactions"
+- [ ] Improve TypeScript type safety throughout the codebase
 
 ## License
 

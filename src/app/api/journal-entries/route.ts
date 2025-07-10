@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare entries for bulk upsert
-    const bulkOps = transactions.map((transaction: any) => {
+    const bulkOps = transactions.map((transaction: Record<string, unknown>) => {
       // Log the first entry to debug field mapping
       if (transactions.indexOf(transaction) === 0) {
         console.log('Sample transaction being saved:', {
@@ -73,6 +73,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const integrationId = searchParams.get("integrationId");
     const classification = searchParams.get("classification");
+    const ledgerAccountId = searchParams.get("ledgerAccountId");
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
     const countOnly = searchParams.get("countOnly") === "true";
@@ -109,12 +110,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Build query
-    const query: any = {};
+    const query: Record<string, unknown> = {};
     if (integrationId) {
       query.integrationId = integrationId;
     }
     if (classification) {
       query.classification = classification;
+    }
+    if (ledgerAccountId) {
+      // Filter transactions that have line items with the specified ledgerAccountId
+      query["lineItems.ledgerAccountId"] = ledgerAccountId;
     }
 
     // Get transactions with pagination
