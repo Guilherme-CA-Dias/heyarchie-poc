@@ -67,7 +67,10 @@ heyarchie-poc/
 │   │   │   ├── journal-entries/     # General ledger transactions API
 │   │   │   ├── ledger-accounts/     # Ledger accounts API
 │   │   │   └── webhooks/            # Webhook handlers
-│   │   ├── general-ledger/          # General ledger page
+│   │   ├── general-ledger/          # General ledger page (refactored with modular components)
+│   │   │   ├── components/          # Modular components for ledger functionality
+│   │   │   ├── hooks/               # Custom hooks for data management
+│   │   │   └── types.ts             # Shared TypeScript interfaces
 │   │   ├── integrations/            # Integrations management page
 │   │   └── knowledge/               # Knowledge base page
 │   ├── components/                   # Reusable UI components
@@ -165,7 +168,25 @@ MONGODB_URI=mongodb://admin:password123@localhost:27017/knowledge
 
 ## Features
 
+### General Ledger Management (Refactored Architecture)
+
+The General Ledger page has been refactored into a modular component architecture for better maintainability:
+
+- **ImportSection**: Handles importing transactions and ledger accounts from integrations
+- **LedgerAccountsSidebar**: Displays and filters ledger accounts with sticky positioning
+- **TransactionsList**: Main transactions display with search, filtering, and infinite scrolling
+- **useTransactions Hook**: Centralized data management for transaction operations
+- **Shared Types**: TypeScript interfaces for type safety across components
+
+This modular approach provides:
+
+- Better separation of concerns
+- Improved code reusability
+- Easier testing and debugging
+- Enhanced developer experience
+
 ### General Ledger Management
+
 - Import transactions from accounting integrations (QuickBooks, Xero)
 - Filter transactions by ledger accounts
 - View transaction line items and details
@@ -173,11 +194,13 @@ MONGODB_URI=mongodb://admin:password123@localhost:27017/knowledge
 - Integration-specific transaction views
 
 ### Document Management
+
 - Import documents from cloud storage (Google Drive, Dropbox, OneDrive, etc.)
 - Real-time document synchronization
 - Document search and filtering
 
 ### Knowledge Base
+
 - Organize imported content into a searchable knowledge base
 - Integration-based content grouping
 - Document navigation and viewing
