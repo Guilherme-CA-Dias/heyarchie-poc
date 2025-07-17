@@ -1,0 +1,6 @@
+id: 6879381b6dd605920a2b6814
+key: workday-soap
+name: Workday SOAP
+connectorId: 687020dfd184ef990b7a2624
+baseUri: s3://integration-app-connectors/public/8b9d0d5c-0312-416c-884f-5144e539c9e5
+connectorVersion: 1.0.0

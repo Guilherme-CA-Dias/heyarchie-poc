@@ -97,5 +97,5 @@ nodes:
     links: []
 autoCreateInstances: true
 customized: false
-isDeployed: false
+isDeployed: true
 integrationKey: quickbooks

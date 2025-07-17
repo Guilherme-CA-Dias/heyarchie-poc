@@ -58,6 +58,26 @@ importValue:
           $var: $.item.JournalEntryLineDetail.AccountRef.name
         ledgerAccountId:
           $var: $.item.JournalEntryLineDetail.AccountRef.value
+        dimension_className:
+          $var: $.item.JournalEntryLineDetail.ClassRef.name
+        dimension_classValue:
+          $var: $.item.JournalEntryLineDetail.ClassRef.value
+        dimension_itemName:
+          $var: null
+        dimension_itemValue:
+          $var: null
+        dimension_customerName:
+          $var: $.item.JournalEntryLineDetail.Entity.Name
+        dimension_customerValue:
+          $var: $.item.JournalEntryLineDetail.Entity.EntityRef.value
+        dimension_locationName:
+          $var: $.item.JournalEntryLineDetail.DepartmentRef.name
+        dimension_locationValue:
+          $var: $.item.JournalEntryLineDetail.DepartmentRef.value
+        dimension_projectName:
+          $var: $.item.JournalEntryLineDetail.Entity.Name
+        dimension_projectValue:
+          $var: $.item.JournalEntryLineDetail.Entity.EntityRef.value
   transactionDate:
     $var: $.TxnDate
   createdTime:

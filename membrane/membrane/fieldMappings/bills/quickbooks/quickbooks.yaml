@@ -82,6 +82,26 @@ importValue:
         ledgerAccountId:
           $firstNotEmpty:
             - $var: $.item.AccountBasedExpenseLineDetail.AccountRef.value
+        dimension_className:
+          $var: $.item.AccountBasedExpenseLineDetail.ClassRef.name
+        dimension_classValue:
+          $var: $.item.AccountBasedExpenseLineDetail.ClassRef.value
+        dimension_itemName:
+          $var: $.item.ItemBasedExpenseLineDetail.ItemRef.name
+        dimension_itemValue:
+          $var: $.item.ItemBasedExpenseLineDetail.ItemRef.value
+        dimension_customerName:
+          $var: $.item.AccountBasedExpenseLineDetail.CustomerRef.name
+        dimension_customerValue:
+          $var: $.item.AccountBasedExpenseLineDetail.CustomerRef.value
+        dimension_locationName:
+          $var: $.parent.ClassRef.name
+        dimension_locationValue:
+          $var: $.parent.ClassRef.value
+        dimension_projectName:
+          $var: $.item.AccountBasedExpenseLineDetail.CustomerRef.name
+        dimension_projectValue:
+          $var: $.item.AccountBasedExpenseLineDetail.CustomerRef.value
   totalAmount:
     $var: TotalAmt
   balance:

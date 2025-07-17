@@ -1,0 +1,25 @@
+isCustomized: true
+integrationId: 6879381b6dd605920a2b6814
+key: list-ledgers
+state: READY
+errors: []
+isDeactivated: false
+id: 68793a7e3dfb361749ac33da
+name: List Ledgers
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    '':
+      type: string
+config:
+  dataSource:
+    collectionKey: ledgers
+  override:
+    apiRequests:
+      - match:
+          path: >-
+            https://wd2-impl-services1.workday.com/ccx/service/ibmsrv_pt1/Financial_Management/v42.2
+          method: GET
+isDeployed: false
+integrationKey: workday-soap

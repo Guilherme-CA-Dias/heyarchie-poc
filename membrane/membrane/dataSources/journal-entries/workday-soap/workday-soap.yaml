@@ -1,0 +1,38 @@
+key: journal-entries
+state: READY
+errors: []
+isDeactivated: false
+id: 68793955d2e8a3383b71aad5
+name: Journal Entries
+integrationId: 6879381b6dd605920a2b6814
+customized: true
+universalDataSourceId: 68641c60ab44ea46f8be96ae
+collectionKey: journal-entries
+udm: journal-entries
+defaultPath: /data/journal-entries
+integration:
+  key: workday-soap
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 6879381b6dd605920a2b6814
+  name: Workday SOAP
+  uuid: dea14408-d93d-4622-9f8d-a2deb82b1063
+  connectorId: 687020dfd184ef990b7a2624
+  hasMissingParameters: false
+  hasDocumentation: false
+  hasOperations: false
+  hasData: true
+  hasEvents: false
+  hasGlobalWebhooks: false
+  hasUdm: false
+  baseUri: s3://integration-app-connectors/public/8b9d0d5c-0312-416c-884f-5144e539c9e5
+  connectorVersion: 1.0.0
+  logoUri: >-
+    https://static.integration.app/connectors/workday-soap/asset-5c44cfbe-a182-4056-8688-632884ed7d93.png
+  appUuid: 06ee8021-da61-4b4c-b052-60b31832af99
+  dataCollectionsCount: 3
+  operationsCount: 0
+  eventsCount: 0
+  authType: client-credentials
+integrationKey: workday-soap
