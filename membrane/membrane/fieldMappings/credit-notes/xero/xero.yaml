@@ -83,6 +83,26 @@ importValue:
           $var: $.item.LineAmount
         ledgerAccountId:
           $var: $.item.AccountID
+        dimension_className:
+          $var: $.item.Tracking[0].Name
+        dimension_classValue:
+          $var: $.item.Tracking[0].Option
+        dimension_itemName:
+          $var: $.item.ItemCode
+        dimension_itemValue:
+          $var: $.item.ItemCode
+        dimension_customerName:
+          $var: $.parent.Contact.Name
+        dimension_customerValue:
+          $var: $.parent.Contact.ContactID
+        dimension_locationName:
+          $var: $.item.Tracking[1].Name
+        dimension_locationValue:
+          $var: $.item.Tracking[1].Option
+        dimension_projectName:
+          $var: $.parent.Contact.Name
+        dimension_projectValue:
+          $var: $.parent.Contact.ContactID
   totalAmount:
     $var: $.Total
   totalTax:

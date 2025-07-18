@@ -1,0 +1,9 @@
+workspaces:
+  default:
+    key:
+    secret:
+    apiUri: https://api.integration.app
+  integration-app-po-c:
+    key:
+    secret:
+    apiUri: https://api.integration.app

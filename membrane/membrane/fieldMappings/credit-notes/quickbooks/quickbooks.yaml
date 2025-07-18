@@ -100,6 +100,26 @@ importValue:
           $var: $.item.SalesItemLineDetail.UnitPrice
         taxRate:
           $var: $.item.SalesItemLineDetail.TaxCodeRef.value
+        dimension_className:
+          $var: $.item.SalesItemLineDetail.ClassRef.name
+        dimension_classValue:
+          $var: $.item.SalesItemLineDetail.ClassRef.value
+        dimension_itemName:
+          $var: $.item.SalesItemLineDetail.ItemRef.name
+        dimension_itemValue:
+          $var: $.item.SalesItemLineDetail.ItemRef.value
+        dimension_customerName:
+          $var: $.parent.CustomerRef.name
+        dimension_customerValue:
+          $var: $.parent.CustomerRef.value
+        dimension_locationName:
+          $var: $.parent.ClassRef.name
+        dimension_locationValue:
+          $var: $.parent.ClassRef.value
+        dimension_projectName:
+          $var: $.item.SalesItemLineDetail.CustomerRef.name
+        dimension_projectValue:
+          $var: $.item.SalesItemLineDetail.CustomerRef.value
   totalAmount:
     $var: $.TotalAmt
   totalTax:

@@ -37,6 +37,8 @@ exportValue:
           $var: $.item.description
         LineAmount:
           $var: $.item.amount
+        projectId:
+          $var: $.item.projectId
   Narration:
     $var: $.title
 importValue:

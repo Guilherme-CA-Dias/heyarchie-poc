@@ -1,0 +1,19 @@
+isCustomized: true
+parentId: 68644adf1cba9ea888b27f54
+integrationId: 6879381b6dd605920a2b6814
+key: get-ledger-accounts
+state: READY
+errors: []
+isDeactivated: false
+id: 68794deaf6406a0f42f68380
+name: Get Ledger Accounts
+type: run-javascript
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+config:
+  code: "export default async function getWorkdayLedgerAccounts({\n\tinput,\n\tengineApiClient,\n}) {\n\ttry {\n\t\t// Call the Workday SOAP action to get journal entries\n\t\tconst response = await engineApiClient.post(\n\t\t\t\"/connections/workday-soap/actions/get-journal-entries/run\",\n\t\t\tinput\n\t\t);\n\n\t\t// Extract journal entries data\n\t\tconst records = response.output.records;\n\n\t\tif (!records || !Array.isArray(records)) {\n\t\t\treturn {\n\t\t\t\tsuccess: true,\n\t\t\t\trecords: [],\n\t\t\t};\n\t\t}\n\n\t\t// Extract all ledger accounts from journal entry lines\n\t\tconst ledgerAccounts = new Map(); // Use Map to avoid duplicates\n\n\t\trecords.forEach((record, recordIndex) => {\n\t\t\tconst rawFields = record.rawFields;\n\t\t\tconst journalEntryData = rawFields?.Journal_Entry_Data;\n\n\t\t\tif (journalEntryData && journalEntryData.Journal_Entry_Line_Data) {\n\t\t\t\tconst journalEntryLines = Array.isArray(\n\t\t\t\t\tjournalEntryData.Journal_Entry_Line_Data\n\t\t\t\t)\n\t\t\t\t\t? journalEntryData.Journal_Entry_Line_Data\n\t\t\t\t\t: [journalEntryData.Journal_Entry_Line_Data];\n\n\t\t\t\tjournalEntryLines.forEach((line, lineIndex) => {\n\t\t\t\t\tconst ledgerAccountRef = line.Ledger_Account_Reference;\n\n\t\t\t\t\tif (\n\t\t\t\t\t\tledgerAccountRef &&\n\t\t\t\t\t\tledgerAccountRef.ID &&\n\t\t\t\t\t\tArray.isArray(ledgerAccountRef.ID)\n\t\t\t\t\t) {\n\t\t\t\t\t\t// Find the Ledger_Account_ID\n\t\t\t\t\t\tconst ledgerAccountId = ledgerAccountRef.ID.find(\n\t\t\t\t\t\t\t(id) => id.$?.type === \"Ledger_Account_ID\"\n\t\t\t\t\t\t);\n\n\t\t\t\t\t\tif (ledgerAccountId && ledgerAccountId._) {\n\t\t\t\t\t\t\tconst accountId = ledgerAccountId._;\n\t\t\t\t\t\t\tconst fullAccountName =\n\t\t\t\t\t\t\t\tledgerAccountRef.$?.Descriptor || \"Unknown Account\";\n\n\t\t\t\t\t\t\t// Remove the number prefix (e.g., \"6010:Benefits Expenses\" -> \"Benefits Expenses\")\n\t\t\t\t\t\t\tconst accountName = fullAccountName.includes(\":\")\n\t\t\t\t\t\t\t\t? fullAccountName.split(\":\").slice(1).join(\":\").trim()\n\t\t\t\t\t\t\t\t: fullAccountName;\n\n\t\t\t\t\t\t\t// Only add if not already in the map\n\t\t\t\t\t\t\tif (!ledgerAccounts.has(accountId)) {\n\t\t\t\t\t\t\t\tledgerAccounts.set(accountId, {\n\t\t\t\t\t\t\t\t\tfields: {\n\t\t\t\t\t\t\t\t\t\tid: accountId,\n\t\t\t\t\t\t\t\t\t\tname: accountName,\n\t\t\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\t\tid: accountId,\n\t\t\t\t\t\t\t\t\tname: accountName,\n\t\t\t\t\t\t\t\t});\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t});\n\t\t\t}\n\t\t});\n\n\t\t// Convert Map to array of records\n\t\tconst ledgerAccountRecords = Array.from(ledgerAccounts.values());\n\n\t\treturn {\n\t\t\tsuccess: true,\n\t\t\trecords: ledgerAccountRecords,\n\t\t};\n\t} catch (error) {\n\t\tconsole.error(\"❌ Error extracting Workday ledger accounts:\", {\n\t\t\tmessage: error.message,\n\t\t\tcode: error.code,\n\t\t\tstatus: error.response?.status,\n\t\t\tstatusText: error.response?.statusText,\n\t\t});\n\n\t\treturn {\n\t\t\tsuccess: false,\n\t\t\terror: {\n\t\t\t\tmessage: error.message,\n\t\t\t\tcode: error.code,\n\t\t\t\tdetails: error.response?.data || null,\n\t\t\t\tstatus: error.response?.status,\n\t\t\t},\n\t\t\trecords: [],\n\t\t};\n\t}\n}\n"
+isDeployed: true
+integrationKey: workday-soap

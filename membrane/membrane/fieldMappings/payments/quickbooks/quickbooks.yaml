@@ -61,6 +61,26 @@ importValue:
           $var: $.item.Amount
         type:
           $var: $.item.LinkedTxn[0].TxnType
+        dimension_className:
+          $var: null
+        dimension_classValue:
+          $var: null
+        dimension_itemName:
+          $var: null
+        dimension_itemValue:
+          $var: null
+        dimension_customerName:
+          $var: $.parent.CustomerRef.name
+        dimension_customerValue:
+          $var: $.parent.CustomerRef.value
+        dimension_locationName:
+          $var: null
+        dimension_locationValue:
+          $var: null
+        dimension_projectName:
+          $var: $.parent.CustomerRef.name
+        dimension_projectValue:
+          $var: $.parent.CustomerRef.value
 integration:
   key: quickbooks
   state: READY
