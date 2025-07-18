@@ -1,0 +1,63 @@
+key: receive-refunds-events
+state: READY
+errors: []
+isDeactivated: false
+id: 687a73faa0696ddc65469a9d
+name: Receive Refunds events
+nodes:
+  data-record-created-trigger:
+    type: data-record-created-trigger
+    name: Data Record Created Trigger
+    links:
+      - key: list-data-records
+  data-record-updated-trigger:
+    type: data-record-updated-trigger
+    name: Data Record Updated Trigger
+    links:
+      - key: list-data-records-1
+  data-record-deleted-trigger:
+    type: data-record-deleted-trigger
+    name: Data Record Deleted Trigger
+    links:
+      - key: api-request-to-your-app-2
+  list-data-records:
+    type: find-data-record-by-id
+    name: List Data Records
+    config:
+      dataSource:
+        key: refunds
+      id:
+        $var: $.input.data-record-created-trigger.record.id
+      fieldMapping:
+        key: refunds
+        includeRawFields: true
+    links:
+      - key: api-request-to-your-app
+  api-request-to-your-app:
+    type: api-request-to-your-app
+    name: API Request to Your App
+    links: []
+  list-data-records-1:
+    type: find-data-record-by-id
+    name: List Data Records
+    config:
+      dataSource:
+        key: refunds
+      id:
+        $var: $.input.data-record-updated-trigger.record.id
+      fieldMapping:
+        key: refunds
+        includeRawFields: true
+    links:
+      - key: api-request-to-your-app-1
+  api-request-to-your-app-1:
+    type: api-request-to-your-app
+    name: API Request to Your App
+    links: []
+  api-request-to-your-app-2:
+    type: api-request-to-your-app
+    name: API Request to Your App
+    links: []
+autoCreateInstances: true
+customized: true
+isDeployed: false

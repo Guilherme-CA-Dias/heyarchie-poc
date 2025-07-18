@@ -88,11 +88,12 @@ importValue:
         dimension_locationValue: ''
         dimension_projectName: ''
         dimension_projectValue: ''
-  transactionDate: ''
+  transactionDate:
+    $var: $.Journal_Entry_Data.Accounting_Date
   createdTime:
-    $var: $.Creation_Date
+    $var: $.Journal_Entry_Data.Creation_Date
   updatedTime:
-    $var: $.Last_Updated_Date
+    $var: $.Journal_Entry_Data.Last_Updated_Date
   ledgerAccountId:
     $var: $.Ledger_Reference.ID
   classification: Journal Entry

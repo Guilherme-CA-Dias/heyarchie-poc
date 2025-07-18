@@ -1,0 +1,9 @@
+key: refunds
+state: READY
+errors: []
+isDeactivated: false
+id: 687a69129e1824fc71dba6c7
+name: Refunds
+customized: true
+dataSourceKey: refunds
+direction: both

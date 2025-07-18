@@ -5,146 +5,146 @@ import { TransactionModel } from "@/models/journal-entry";
 import connectDB from "@/lib/mongodb";
 
 export async function POST(request: NextRequest) {
-  try {
-    await connectDB();
+	try {
+		await connectDB();
 
-    const body = await request.json();
-    const { transactions, connectionId, integrationId, integrationName } = body;
+		const body = await request.json();
+		const { transactions, connectionId, integrationId, integrationName } = body;
 
-    if (!transactions || !Array.isArray(transactions)) {
-      return NextResponse.json({ error: "Invalid transactions data" }, { status: 400 });
-    }
+		if (!transactions || !Array.isArray(transactions)) {
+			return NextResponse.json(
+				{ error: "Invalid transactions data" },
+				{ status: 400 }
+			);
+		}
 
-    // Prepare entries for bulk upsert
-    const bulkOps = transactions.map((transaction: Record<string, unknown>) => {
-      // Log the first entry to debug field mapping
-      if (transactions.indexOf(transaction) === 0) {
-        console.log('Sample transaction being saved:', {
-          id: transaction.id,
-          integrationId,
-          connectionId,
-          classification: transaction.classification,
-          ledgerAccountId: transaction.ledgerAccountId,
-          hasLedgerAccountId: 'ledgerAccountId' in transaction,
-          fields: Object.keys(transaction)
-        });
-      }
-      
-      return {
-        updateOne: {
-          filter: { id: transaction.id, integrationId, connectionId },
-          update: {
-            $set: {
-              ...transaction,
-              connectionId,
-              integrationId,
-              integrationName,
-              importedAt: new Date().toISOString(),
-            },
-          },
-          upsert: true,
-        },
-      };
-    });
+		// Prepare entries for bulk upsert
+		const bulkOps = transactions.map((transaction: Record<string, unknown>) => {
+			// Log the first entry to debug field mapping
+			if (transactions.indexOf(transaction) === 0) {
+				console.log("Sample transaction being saved:", {
+					id: transaction.id,
+					integrationId,
+					connectionId,
+					classification: transaction.classification,
+					ledgerAccountId: transaction.ledgerAccountId,
+					hasLedgerAccountId: "ledgerAccountId" in transaction,
+					fields: Object.keys(transaction),
+				});
+			}
 
-    // Perform bulk upsert
-    const result = await TransactionModel.bulkWrite(bulkOps);
+			return {
+				updateOne: {
+					filter: { id: transaction.id, integrationId, connectionId },
+					update: {
+						$set: {
+							...transaction,
+							connectionId,
+							integrationId,
+							integrationName,
+							importedAt: new Date().toISOString(),
+						},
+					},
+					upsert: true,
+				},
+			};
+		});
 
-    return NextResponse.json({
-      success: true,
-      inserted: result.upsertedCount,
-      modified: result.modifiedCount,
-      total: transactions.length,
-    });
+		// Perform bulk upsert
+		const result = await TransactionModel.bulkWrite(bulkOps);
 
-  } catch (error) {
-    console.error("Error saving transactions:", error);
-    return NextResponse.json(
-      { error: "Failed to save transactions" },
-      { status: 500 }
-    );
-  }
+		return NextResponse.json({
+			success: true,
+			inserted: result.upsertedCount,
+			modified: result.modifiedCount,
+			total: transactions.length,
+		});
+	} catch (error) {
+		console.error("Error saving transactions:", error);
+		return NextResponse.json(
+			{ error: "Failed to save transactions" },
+			{ status: 500 }
+		);
+	}
 }
 
 export async function GET(request: NextRequest) {
-  try {
-    await connectDB();
+	try {
+		await connectDB();
 
-    const { searchParams } = new URL(request.url);
-    const integrationId = searchParams.get("integrationId");
-    const classification = searchParams.get("classification");
-    const ledgerAccountId = searchParams.get("ledgerAccountId");
-    const limit = parseInt(searchParams.get("limit") || "50");
-    const offset = parseInt(searchParams.get("offset") || "0");
-    const countOnly = searchParams.get("countOnly") === "true";
+		const { searchParams } = new URL(request.url);
+		const integrationId = searchParams.get("integrationId");
+		const classification = searchParams.get("classification");
+		const ledgerAccountId = searchParams.get("ledgerAccountId");
+		const limit = parseInt(searchParams.get("limit") || "50");
+		const offset = parseInt(searchParams.get("offset") || "0");
+		const countOnly = searchParams.get("countOnly") === "true";
 
-    // If countOnly is true, return counts by integration
-    if (countOnly) {
-      const pipeline = [
-        {
-          $group: {
-            _id: "$integrationId",
-            count: { $sum: 1 },
-            integrationName: { $first: "$integrationName" }
-          }
-        },
-        {
-          $project: {
-            integrationId: "$_id",
-            count: 1,
-            integrationName: 1,
-            _id: 0
-          }
-        }
-      ];
+		// If countOnly is true, return counts by integration
+		if (countOnly) {
+			const pipeline = [
+				{
+					$group: {
+						_id: "$integrationId",
+						count: { $sum: 1 },
+						integrationName: { $first: "$integrationName" },
+					},
+				},
+				{
+					$project: {
+						integrationId: "$_id",
+						count: 1,
+						integrationName: 1,
+						_id: 0,
+					},
+				},
+			];
 
-      const counts = await TransactionModel.aggregate(pipeline);
-      
-      // Get total count
-      const totalCount = await TransactionModel.countDocuments({});
+			const counts = await TransactionModel.aggregate(pipeline);
 
-      return NextResponse.json({
-        counts,
-        total: totalCount
-      });
-    }
+			// Get total count
+			const totalCount = await TransactionModel.countDocuments({});
 
-    // Build query
-    const query: Record<string, unknown> = {};
-    if (integrationId) {
-      query.integrationId = integrationId;
-    }
-    if (classification) {
-      query.classification = classification;
-    }
-    if (ledgerAccountId) {
-      // Filter transactions that have line items with the specified ledgerAccountId
-      query["lineItems.ledgerAccountId"] = ledgerAccountId;
-    }
+			return NextResponse.json({
+				counts,
+				total: totalCount,
+			});
+		}
 
-    // Get transactions with pagination
-    const transactions = await TransactionModel
-      .find(query)
-      .sort({ transactionDate: -1, createdTime: -1 })
-      .skip(offset)
-      .limit(limit)
-      .lean();
+		// Build query
+		const query: Record<string, unknown> = {};
+		if (integrationId) {
+			query.integrationId = integrationId;
+		}
+		if (classification) {
+			query.classification = classification;
+		}
+		if (ledgerAccountId) {
+			// Filter transactions that have line items with the specified ledgerAccountId
+			query["lineItems.ledgerAccountId"] = ledgerAccountId;
+		}
 
-    // Get total count
-    const total = await TransactionModel.countDocuments(query);
+		// Get transactions with pagination
+		const transactions = await TransactionModel.find(query)
+			.sort({ transactionDate: -1, createdTime: -1 })
+			.skip(offset)
+			.limit(limit)
+			.lean();
 
-    return NextResponse.json({
-      transactions,
-      total,
-      limit,
-      offset,
-    });
+		// Get total count
+		const total = await TransactionModel.countDocuments(query);
 
-  } catch (error) {
-    console.error("Error fetching transactions:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch transactions" },
-      { status: 500 }
-    );
-  }
-} 
+		return NextResponse.json({
+			transactions,
+			total,
+			limit,
+			offset,
+		});
+	} catch (error) {
+		console.error("Error fetching transactions:", error);
+		return NextResponse.json(
+			{ error: "Failed to fetch transactions" },
+			{ status: 500 }
+		);
+	}
+}

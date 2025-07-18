@@ -1,51 +1,39 @@
-key: sales-receipt
+key: refunds
 state: READY
 errors: []
 isDeactivated: false
-id: 686d21a6618f7303bfc13b86
-name: Sales Receipt
+id: 687a693f20603004f48b15b3
+name: Refunds
 customized: true
-universalFieldMappingId: 686d219b618f7303bfc13a2d
+universalFieldMappingId: 687a69129e1824fc71dba6c7
 integrationId: 68641c5eab44ea46f8be9699
-dataSourceKey: sales-receipt
-direction: import
+dataSourceKey: refunds
+direction: both
 importValue:
-  account:
-    $var: $.ClassRef.name
-  totalAmount:
-    $var: $.TotalAmt
-  transactionDate:
-    $var: $.MetaData.CreateTime
+  id:
+    $var: $.Id
+  number:
+    $var: $.DocNumber
+  memo:
+    $var: $.PrivateNote
+  currency:
+    $var: $.CurrencyRef.value
   lineItems:
     $iterate:
       source:
         $var: $.Line
       item:
+        id:
+          $var: $.item.Id
         description:
           $var: $.item.Description
         amount:
-          $case:
-            cases:
-              - filter:
-                  $eval:
-                    $var: $.item.DetailType
-                  is: DiscountLineDetail
-                value:
-                  $tpl:
-                    template: '-{1752849841421}'
-                    values:
-                      '1752849841421':
-                        $var: $.item.Amount
-            default:
-              $var: $.item.Amount
-        id:
-          $var: $.item.Id
-        ledgerAccountId:
-          $firstNotEmpty:
-            - $var: $.item.SalesItemLineDetail.ItemAccountRef.value
-            - $var: $.item.DiscountLineDetail.DiscountAccountRef.value
+          $var: $.item.Amount
         type:
           $var: $.item.DetailType
+        dimension: ''
+        ledgerAccountId:
+          $var: $.item.SalesItemLineDetail.ItemAccountRef.value
         dimension_className:
           $var: $.item.SalesItemLineDetail.ClassRef.name
         dimension_classValue:
@@ -55,22 +43,30 @@ importValue:
         dimension_itemValue:
           $var: $.item.SalesItemLineDetail.ItemRef.value
         dimension_customerName:
-          $var: $.parent.CustomerRef.name
+          $var: $.item.JournalEntryLineDetail.Entity.Name
         dimension_customerValue:
-          $var: $.parent.CustomerRef.value
+          $var: $.item.JournalEntryLineDetail.Entity.EntityRef.value
         dimension_locationName:
-          $var: $.parent.ClassRef.name
+          $var: $.item.JournalEntryLineDetail.DepartmentRef.name
         dimension_locationValue:
-          $var: $.parent.ClassRef.value
+          $var: $.item.JournalEntryLineDetail.DepartmentRef.value
         dimension_projectName:
-          $var: $.item.SalesItemLineDetail.CustomerRef.name
+          $var: $.item.JournalEntryLineDetail.Entity.Name
         dimension_projectValue:
-          $var: $.item.SalesItemLineDetail.CustomerRef.value
+          $var: $.item.JournalEntryLineDetail.Entity.EntityRef.value
+  transactionDate:
+    $var: $.TxnDate
+  createdTime:
+    $var: $.MetaData.CreateTime
+  updatedTime:
+    $var: $.MetaData.LastUpdatedTime
+  ledgerAccountId:
+    $var: $.DepositToAccountRef.value
+  classification: Refunds
   description:
-    $var: $.CustomerMemo.name
-  classification: Sales Receipt
-  id:
-    $var: $.Id
+    $var: $.PrivateNote
+  totalAmount:
+    $var: $.TotalAmt
 integration:
   key: quickbooks
   state: READY
