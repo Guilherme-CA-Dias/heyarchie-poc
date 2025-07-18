@@ -1,0 +1,25 @@
+isCustomized: false
+parentId: 687a68df20603004f48b0805
+integrationId: 68641c5eab44ea46f8be9699
+key: get-refunds
+state: READY
+errors: []
+isDeactivated: false
+id: 687a693f20603004f48b158f
+name: Get refunds
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+config:
+  dataSource:
+    key: refunds
+  cursor:
+    $var: $.input.cursor
+  fieldMapping:
+    key: refunds
+    includeRawFields: true
+isDeployed: true
+integrationKey: quickbooks

@@ -1,37 +1,14 @@
-key: journal-entries
+key: bill-payment
 state: READY
 errors: []
 isDeactivated: false
-id: 68641c60ab44ea46f8be96da
-name: Journal Entries
+id: 687a713df61581b1737bcb71
+name: Bill payment
 customized: true
-universalFieldMappingId: 68641c60ab44ea46f8be96cb
+universalFieldMappingId: 687a71719e1824fc71dce9fa
 integrationId: 68641c5eab44ea46f8be9699
-dataSourceKey: journal-entries
-direction: import
-defaultImportValue:
-  $var: $
-defaultExportValue:
-  $var: $
-exportValue:
-  PrivateNote:
-    $var: $.memo
-  CurrencyRef:
-    value:
-      $var: $.currency
-  DocNumber:
-    $var: $.number
-  Line:
-    $iterate:
-      source:
-        $var: $.lineItems
-      item:
-        Description:
-          $var: $.item.description
-        DetailType:
-          $var: $.item.type
-        Amount:
-          $var: $.item.amount
+dataSourceKey: bill-payments
+direction: both
 importValue:
   id:
     $var: $.Id
@@ -47,9 +24,9 @@ importValue:
         $var: $.Line
       item:
         id:
-          $var: $.item.Id
+          $var: $.parent.Id
         description:
-          $var: $.item.Description
+          $var: $.parent.VendorRef.name
         amount:
           $case:
             cases:
@@ -70,31 +47,24 @@ importValue:
                 value:
                   $var: $.item.Amount
         type:
-          $var: $.item.DetailType
-        dimension:
-          $var: $.item.JournalEntryLineDetail.AccountRef.name
+          $var: $.parent.PayType
+        dimension: ''
         ledgerAccountId:
-          $var: $.item.JournalEntryLineDetail.AccountRef.value
-        dimension_className:
-          $var: $.item.JournalEntryLineDetail.ClassRef.name
-        dimension_classValue:
-          $var: $.item.JournalEntryLineDetail.ClassRef.value
+          $var: $.parent.CheckPayment.BankAccountRef.value
+        dimension_className: ''
+        dimension_classValue: ''
         dimension_itemName:
-          $var: null
+          $var: $.item.LinkedTxn[0].TxnType
         dimension_itemValue:
-          $var: null
-        dimension_customerName:
-          $var: $.item.JournalEntryLineDetail.Entity.Name
-        dimension_customerValue:
-          $var: $.item.JournalEntryLineDetail.Entity.EntityRef.value
-        dimension_locationName:
-          $var: $.item.JournalEntryLineDetail.DepartmentRef.name
-        dimension_locationValue:
-          $var: $.item.JournalEntryLineDetail.DepartmentRef.value
+          $var: $.item.LinkedTxn[0].TxnId
+        dimension_customerName: ''
+        dimension_customerValue: ''
+        dimension_locationName: ''
+        dimension_locationValue: ''
         dimension_projectName:
-          $var: $.item.JournalEntryLineDetail.Entity.Name
+          $var: $.parent.VendorRef.name
         dimension_projectValue:
-          $var: $.item.JournalEntryLineDetail.Entity.EntityRef.value
+          $var: $.parent.VendorRef.value
   transactionDate:
     $var: $.TxnDate
   createdTime:
@@ -102,8 +72,8 @@ importValue:
   updatedTime:
     $var: $.MetaData.LastUpdatedTime
   ledgerAccountId:
-    $var: $.Line[0].JournalEntryLineDetail.AccountRef.value
-  classification: Journal Entry
+    $var: $.APAccountRef.value
+  classification: Bill Payment
   description:
     $var: $.PrivateNote
   totalAmount:

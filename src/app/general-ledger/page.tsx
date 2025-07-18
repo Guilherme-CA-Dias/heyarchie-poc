@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import ImportSection from "./components/ImportSection";
 import LedgerAccountsSidebar from "./components/LedgerAccountsSidebar";
 import TransactionsList from "./components/TransactionsList";
@@ -9,11 +9,14 @@ export default function GeneralLedgerPage() {
 	const [selectedLedgerAccountId, setSelectedLedgerAccountId] = useState<
 		string | null
 	>(null);
+	const reloadTransactionsRef = useRef<() => void>(() => {});
+	const reloadLedgerAccountsRef = useRef<() => void>(() => {});
 
-	const handleImportComplete = () => {
-		// This will trigger a reload of data in child components
-		// The components will handle their own data reloading
-	};
+	const handleImportComplete = useCallback(() => {
+		// Trigger reload of data in child components
+		reloadTransactionsRef.current();
+		reloadLedgerAccountsRef.current();
+	}, []);
 
 	const handleLedgerAccountSelect = (accountId: string) => {
 		setSelectedLedgerAccountId(accountId);
@@ -46,12 +49,18 @@ export default function GeneralLedgerPage() {
 						selectedLedgerAccountId={selectedLedgerAccountId}
 						onLedgerAccountSelect={handleLedgerAccountSelect}
 						onLedgerAccountClear={handleLedgerAccountClear}
+						onReloadData={useCallback((reloadFn) => {
+							reloadLedgerAccountsRef.current = reloadFn;
+						}, [])}
 					/>
 
 					{/* Transactions List */}
 					<TransactionsList
 						selectedLedgerAccountId={selectedLedgerAccountId}
 						onLedgerAccountClear={handleLedgerAccountClear}
+						onReloadData={useCallback((reloadFn) => {
+							reloadTransactionsRef.current = reloadFn;
+						}, [])}
 					/>
 				</div>
 			</div>

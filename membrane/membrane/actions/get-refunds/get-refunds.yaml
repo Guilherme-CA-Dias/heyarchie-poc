@@ -1,0 +1,22 @@
+isCustomized: true
+key: get-refunds
+state: READY
+errors: []
+isDeactivated: false
+id: 687a68df20603004f48b0805
+name: Get refunds
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+config:
+  dataSource:
+    key: refunds
+  cursor:
+    $var: $.input.cursor
+  fieldMapping:
+    key: refunds
+    includeRawFields: true
+isDeployed: true

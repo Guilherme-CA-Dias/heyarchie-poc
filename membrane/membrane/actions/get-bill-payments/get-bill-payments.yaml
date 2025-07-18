@@ -1,0 +1,22 @@
+isCustomized: true
+key: get-bill-payments
+state: READY
+errors: []
+isDeactivated: false
+id: 687a70a5a0696ddc6546178d
+name: Get Bill Payments
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+config:
+  dataSource:
+    key: bill-payments
+  cursor:
+    $var: $.input.cursor
+  fieldMapping:
+    key: bill-payment
+    includeRawFields: true
+isDeployed: true

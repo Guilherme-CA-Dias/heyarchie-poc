@@ -1,0 +1,25 @@
+isCustomized: true
+parentId: 687a70a5a0696ddc6546178d
+integrationId: 68641c5eab44ea46f8be9699
+key: get-bill-payments
+state: READY
+errors: []
+isDeactivated: false
+id: 687a7116a530d8bcdf9531e7
+name: Get Bill Payments
+type: list-data-records
+inputSchema:
+  type: object
+  properties:
+    cursor:
+      type: string
+config:
+  dataSource:
+    key: bill-payments
+  cursor:
+    $var: $.input.cursor
+  fieldMapping:
+    key: bill-payment
+    includeRawFields: true
+isDeployed: true
+integrationKey: quickbooks

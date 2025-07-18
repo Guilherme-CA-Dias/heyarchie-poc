@@ -1,0 +1,8 @@
+key: bill-payment
+state: READY
+errors: []
+isDeactivated: false
+id: 687a71719e1824fc71dce9fa
+name: Bill Payment
+customized: false
+direction: both

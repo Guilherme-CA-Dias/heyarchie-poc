@@ -1,0 +1,35 @@
+key: refunds
+state: READY
+errors: []
+isDeactivated: false
+id: 687a693f20603004f48b159f
+name: Refunds
+integrationId: 68641c5eab44ea46f8be9697
+customized: true
+universalDataSourceId: 687a690245515e8bfa7cfe5b
+collectionKey: bank-transactions
+defaultPath: /data/bank-transactions
+integration:
+  key: xero
+  state: READY
+  errors: []
+  isDeactivated: false
+  id: 68641c5eab44ea46f8be9697
+  name: Xero
+  uuid: e263dafc-5128-42e1-a608-74649861069a
+  connectorId: 642c613b986ed1caad98172b
+  hasMissingParameters: false
+  hasDocumentation: false
+  hasOperations: true
+  hasData: true
+  hasEvents: true
+  hasGlobalWebhooks: true
+  hasUdm: true
+  baseUri: s3://integration-app-connectors/public/91877efa-787d-4858-80d8-3d46e99bb21b
+  connectorVersion: 1.1.4
+  logoUri: https://static.integration.app/connectors/xero-connector/logo.png
+  dataCollectionsCount: 17
+  operationsCount: 234
+  eventsCount: 1
+  authType: oauth2
+integrationKey: xero

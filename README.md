@@ -17,46 +17,6 @@ This is an application showcasing how you can implement Importing Content and Fi
 heyarchie-poc/
 ├── membrane/                          # Integration.app configuration files
 │   └── membrane/                      # Membrane configuration
-│       ├── actions/                   # API actions for integrations
-│       │   ├── download-content-item/ # Content download actions
-│       │   ├── find-content-item-by-id/
-│       │   ├── get-bills/            # Accounting actions
-│       │   ├── get-credit-notes/
-│       │   ├── get-invoices/
-│       │   ├── get-journal-entries/
-│       │   ├── get-ledger-accounts/
-│       │   ├── get-payments/
-│       │   └── get-sales-receipts/
-│       ├── appEventTypes/            # Event type definitions
-│       ├── dataSources/              # Data source configurations
-│       │   ├── bills/
-│       │   ├── content-items/
-│       │   ├── credit-notes/
-│       │   ├── invoices/
-│       │   ├── journal-entries/
-│       │   ├── ledger-accounts/
-│       │   ├── payments/
-│       │   └── sales-receipt/
-│       ├── fieldMappings/            # Field mapping configurations
-│       ├── flows/                    # Integration flows
-│       │   ├── download-content-item/
-│       │   ├── download-document/
-│       │   ├── receive-bill-events/
-│       │   ├── receive-content-item-events/
-│       │   ├── receive-credit-note-events/
-│       │   ├── receive-invoice-events/
-│       │   ├── receive-journal-entry-events/
-│       │   ├── receive-ledger-account-events/
-│       │   ├── receive-payment-events/
-│       │   └── receive-sales-receipt-events/
-│       └── integrations/             # Integration configurations
-│           ├── box/
-│           ├── dropbox/
-│           ├── google-drive/
-│           ├── microsoft-sharepoint/
-│           ├── onedrive/
-│           ├── quickbooks/
-│           └── xero/
 ├── src/
 │   ├── app/                          # Next.js App Router
 │   │   ├── api/                      # API routes
@@ -69,7 +29,15 @@ heyarchie-poc/
 │   │   │   └── webhooks/            # Webhook handlers
 │   │   ├── general-ledger/          # General ledger page (refactored with modular components)
 │   │   │   ├── components/          # Modular components for ledger functionality
+│   │   │   │   ├── ImportSection.tsx           # Import functionality with notification system
+│   │   │   │   ├── LedgerAccountsSidebar.tsx  # Ledger accounts filtering sidebar
+│   │   │   │   ├── TransactionsList.tsx       # Main transactions container
+│   │   │   │   ├── TransactionsListHeader.tsx # Header with search, tabs, and view toggle
+│   │   │   │   ├── LineItemsView.tsx          # Flattened line items display
+│   │   │   │   ├── FullView.tsx               # Complete transaction details view
+│   │   │   │   └── LoadingState.tsx           # Loading component with context
 │   │   │   ├── hooks/               # Custom hooks for data management
+│   │   │   │   └── useTransactions.ts         # Centralized transaction data management
 │   │   │   └── types.ts             # Shared TypeScript interfaces
 │   │   ├── integrations/            # Integrations management page
 │   │   └── knowledge/               # Knowledge base page
@@ -170,28 +138,53 @@ MONGODB_URI=mongodb://admin:password123@localhost:27017/knowledge
 
 ### General Ledger Management (Refactored Architecture)
 
-The General Ledger page has been refactored into a modular component architecture for better maintainability:
+The General Ledger page has been refactored into a modular component architecture for better maintainability and user experience:
 
-- **ImportSection**: Handles importing transactions and ledger accounts from integrations
-- **LedgerAccountsSidebar**: Displays and filters ledger accounts with sticky positioning
-- **TransactionsList**: Main transactions display with search, filtering, and infinite scrolling
-- **useTransactions Hook**: Centralized data management for transaction operations
-- **Shared Types**: TypeScript interfaces for type safety across components
+#### **Core Components:**
 
-This modular approach provides:
+- **ImportSection**: Handles importing transactions and ledger accounts from integrations with smart notification system
+- **LedgerAccountsSidebar**: Displays and filters ledger accounts with sticky positioning and auto-refresh
+- **TransactionsList**: Main transactions container orchestrating all transaction-related functionality
+- **TransactionsListHeader**: Header component with search, integration tabs, and view toggle
+- **LineItemsView**: Flattened line items display with dimension fields and classification
+- **FullView**: Complete transaction details view with all line items and metadata
+- **LoadingState**: Context-aware loading component with transaction count display
 
-- Better separation of concerns
-- Improved code reusability
-- Easier testing and debugging
-- Enhanced developer experience
+#### **Data Management:**
+
+- **useTransactions Hook**: Centralized data management for transaction operations with infinite scrolling
+- **Shared Types**: TypeScript interfaces for type safety across all components
+
+#### **Key Features:**
+
+- **Smart Loading**: Shows transaction counts while loading specific integration tabs
+- **Auto-refresh**: Automatically updates data after import operations
+- **Dimension Fields**: Displays customer, project, class, item, and location dimensions
+- **Classification Support**: Shows transaction classification in line items view
+- **Infinite Scrolling**: Efficient pagination for large transaction datasets
+- **Real-time Search**: Instant filtering across all transaction fields
+
+#### **Architecture Benefits:**
+
+- **Separation of Concerns**: Each component has a single, focused responsibility
+- **Code Reusability**: Components can be easily reused or modified independently
+- **Maintainability**: Smaller, focused components are easier to debug and enhance
+- **Performance**: Optimized rendering with proper React patterns
+- **Developer Experience**: Clear component boundaries and TypeScript safety
 
 ### General Ledger Management
 
-- Import transactions from accounting integrations (QuickBooks, Xero)
-- Filter transactions by ledger accounts
-- View transaction line items and details
-- Search and filter functionality
-- Integration-specific transaction views
+- **Import & Sync**: Import transactions from accounting integrations (QuickBooks, Xero) with real-time synchronization
+- **Smart Filtering**: Filter transactions by ledger accounts with instant updates
+- **Dual View Modes**:
+  - **Line Items View**: Flattened display of individual line items with dimension fields
+  - **Full View**: Complete transaction details with all metadata and line items
+- **Advanced Search**: Real-time search across transaction IDs, memos, numbers, classifications, and line item descriptions
+- **Integration Tabs**: Switch between "All" and specific integration views (QuickBooks, Xero, etc.)
+- **Dimension Support**: Display customer, project, class, item, and location dimensions from accounting systems
+- **Classification Display**: Show transaction classification in both view modes
+- **Infinite Scrolling**: Efficient pagination for large transaction datasets
+- **Auto-refresh**: Automatic data updates after import operations
 
 ### Document Management
 
@@ -207,7 +200,6 @@ This modular approach provides:
 
 ## Todos
 
-- [ ] Get events working for all apps
 - [ ] Update naming convention from "journal entries" to "general ledger transactions"
 - [ ] Improve TypeScript type safety throughout the codebase
 

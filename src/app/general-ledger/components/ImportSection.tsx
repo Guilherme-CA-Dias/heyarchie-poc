@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +32,16 @@ export default function ImportSection({
 	const [isImportingLedgerAccounts, setIsImportingLedgerAccounts] =
 		useState(false);
 	const [importResults, setImportResults] = useState<ImportResult[]>([]);
+
+	// Auto-dismiss import results after 10 seconds
+	useEffect(() => {
+		if (importResults.length > 0) {
+			const timer = setTimeout(() => {
+				setImportResults([]);
+			}, 10000);
+			return () => clearTimeout(timer);
+		}
+	}, [importResults]);
 
 	// Save transactions to MongoDB
 	const saveTransactions = async (
@@ -165,7 +175,7 @@ export default function ImportSection({
 								if (response.output && Array.isArray(response.output.records)) {
 									const transactions = response.output.records.map(
 										(record: any) => {
-											// Ensure line items have ledgerAccountId
+											// Ensure line items have ledgerAccountId and dimension fields
 											const lineItems = (record.fields?.lineItems || []).map(
 												(lineItem: any) => ({
 													id: lineItem.id,
@@ -177,6 +187,22 @@ export default function ImportSection({
 													ledgerAccountId: lineItem.ledgerAccountId,
 													accountRef: lineItem.accountRef,
 													exchangeRate: lineItem.exchangeRate,
+													// Dimension fields
+													dimension_className: lineItem.dimension_className,
+													dimension_classValue: lineItem.dimension_classValue,
+													dimension_itemName: lineItem.dimension_itemName,
+													dimension_itemValue: lineItem.dimension_itemValue,
+													dimension_customerName:
+														lineItem.dimension_customerName,
+													dimension_customerValue:
+														lineItem.dimension_customerValue,
+													dimension_locationName:
+														lineItem.dimension_locationName,
+													dimension_locationValue:
+														lineItem.dimension_locationValue,
+													dimension_projectName: lineItem.dimension_projectName,
+													dimension_projectValue:
+														lineItem.dimension_projectValue,
 												})
 											);
 
@@ -456,50 +482,53 @@ export default function ImportSection({
 				</Card>
 			</div>
 
-			{/* Import Results */}
+			{/* Import Results Notification */}
 			{importResults.length > 0 && (
-				<Card>
-					<CardHeader>
-						<CardTitle>Import Results</CardTitle>
-						<p className="text-sm text-gray-500">
-							Results from the latest import operation
-						</p>
-					</CardHeader>
-					<CardContent>
-						<div className="space-y-3">
+				<div className="fixed top-4 right-4 z-50">
+					<div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-md">
+						<div className="flex items-center justify-between mb-2">
+							<h3 className="font-semibold text-sm">Import Results</h3>
+							<button
+								onClick={() => setImportResults([])}
+								className="text-gray-400 hover:text-gray-600"
+							>
+								×
+							</button>
+						</div>
+						<div className="space-y-2">
 							{importResults.map((result, index) => (
 								<div
 									key={index}
-									className="flex items-center justify-between p-3 border rounded-lg"
+									className="flex items-center justify-between text-xs"
 								>
-									<div className="flex items-center gap-3">
-										{result.success ? (
-											<CheckCircle className="h-5 w-5 text-green-500" />
-										) : (
-											<AlertCircle className="h-5 w-5 text-red-500" />
-										)}
-										<div>
-											<p className="font-medium">{result.integrationName}</p>
-											{result.error && (
-												<p className="text-sm text-red-500">{result.error}</p>
-											)}
-										</div>
-									</div>
 									<div className="flex items-center gap-2">
-										{result.success && (
-											<Badge variant="secondary">
-												{result.count} transactions
-											</Badge>
+										{result.success ? (
+											<CheckCircle className="h-4 w-4 text-green-500" />
+										) : (
+											<AlertCircle className="h-4 w-4 text-red-500" />
 										)}
-										<Badge variant={result.success ? "default" : "destructive"}>
+										<span className="font-medium">
+											{result.integrationName}
+										</span>
+									</div>
+									<div className="flex items-center gap-1">
+										{result.success && (
+											<span className="text-gray-600">
+												{result.count} transactions
+											</span>
+										)}
+										<Badge
+											variant={result.success ? "default" : "destructive"}
+											className="text-xs"
+										>
 											{result.success ? "Success" : "Failed"}
 										</Badge>
 									</div>
 								</div>
 							))}
 						</div>
-					</CardContent>
-				</Card>
+					</div>
+				</div>
 			)}
 		</div>
 	);

@@ -9,12 +9,14 @@ interface LedgerAccountsSidebarProps {
 	selectedLedgerAccountId: string | null;
 	onLedgerAccountSelect: (accountId: string) => void;
 	onLedgerAccountClear: () => void;
+	onReloadData: (reloadFn: () => void) => void;
 }
 
 export default function LedgerAccountsSidebar({
 	selectedLedgerAccountId,
 	onLedgerAccountSelect,
 	onLedgerAccountClear,
+	onReloadData,
 }: LedgerAccountsSidebarProps) {
 	const [ledgerAccounts, setLedgerAccounts] = useState<LedgerAccount[]>([]);
 	const [ledgerAccountSearchTerm, setLedgerAccountSearchTerm] = useState("");
@@ -94,6 +96,11 @@ export default function LedgerAccountsSidebar({
 	// Load ledger accounts on component mount
 	useEffect(() => {
 		loadLedgerAccounts();
+	}, []);
+
+	// Register the reload function with parent component
+	useEffect(() => {
+		onReloadData(loadLedgerAccounts);
 	}, []);
 
 	// Filter ledger accounts based on search term
